@@ -14,7 +14,11 @@ from sklearn.metrics import classification_report
 from ..core._file import save_txt, save_json
 
 
-def export_classification_report(tr, pr, pb, target_names, logpath):
+def export_classification_report(tr: np.ndarray,
+                                 pr: np.ndarray,
+                                 pb: np.ndarray,
+                                 target_names: list,
+                                 logpath:str):
     from time import sleep
     sleep(1)
     
@@ -46,7 +50,10 @@ def export_classification_report(tr, pr, pb, target_names, logpath):
     }
 
 
-def plot_confusion_matrix(cm, target_names, logpath, title='Confusion Matrix'):
+def plot_confusion_matrix(cm: np.ndarray,
+                          target_names: list,
+                          logpath: str,
+                          title: str='Confusion Matrix'):
     lb_loc = np.arange(len(target_names))
     
     # 圖表設定

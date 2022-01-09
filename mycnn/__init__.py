@@ -2,6 +2,7 @@
 
 from . import losses
 from . import data
+from . import utils
 
 from .lenet import LeNet5
 from .lenet import EnhanceLeNet5
