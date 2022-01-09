@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-基於 tf.keras.Model 的實例物件，實現功能擴展
+基於 tf.keras.Model 擴展功能
 """
 
 import os
@@ -75,23 +75,30 @@ class KerasModel(object):
         elif kwargs.get('by_h5df', ""):
             self.load_model(kwargs['by_h5df'])
         elif prebuilt:
-            self.build()
+            self.build(**kwargs)
         else:
             print("[Warning] Please remember to "
                   "first calling `build()` for setup model.")
     
-    def build(self, *args, **kwargs) -> None:
+    def build(self) -> None:
         """
         建立神經網路模型方法
         1. 覆寫 method 的方式，來搭建神經網路架構
-        2. 允許自行定義所需參數，一定要加上`**kwargs`
+        2. 使用 __init__() 方法來自行定義所需參數
         3. 呼叫 self.setup_model(inputs, outputs)
 
         e.g.
         class MyCNN(KerasModel):
-            def build(self, shape=(20,), **kwargs):
-                x_in = layers.Input(shape=shape)
-                x = layers.Dense(1)(x_in)
+            def __init__(self,
+                        input_shape=(20,),
+                        classes_num=1,
+                        **kwargs):
+                self.input_shape = input_shape
+                self.classes_num = classes_num
+            
+            def build(self):
+                x_in = layers.Input(shape=self.input_shape)
+                x = layers.Dense(self.classes_num)(x_in)
                 output = layers.Activation("sigmoid")(x)
                 self.setup_model(x_in, x_out)
         """
@@ -100,7 +107,7 @@ class KerasModel(object):
                                   'method and provide arguments.')
 
     @implement_model
-    def setup_model(self, inputs, outputs, *args, **kwargs) -> tuple:
+    def setup_model(self, inputs, outputs, **kwargs) -> tuple:
         """ 載入 JSON 結構檔，來建立神經網路模型 """
         return inputs, outputs
     
@@ -233,7 +240,7 @@ class KerasModel(object):
 
     @check_state("built")
     def predict(self, x):
-        return self.__M.predict(x)
+        return self.__M.predict(x, batch_size=self.__cfg['batch_size'])
 
     @check_state("built")
     def evaluate(self, x, y):

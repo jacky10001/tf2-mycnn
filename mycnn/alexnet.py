@@ -35,9 +35,17 @@ class LRN(layers.Layer):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-class AlexNet(KerasModel):    
-    def build(self, input_shape=(227, 227, 3), classes_num=1000, **kwargs):
-        x_in = layers.Input(shape=input_shape, name="image")
+class AlexNet(KerasModel):  
+    def __init__(self,
+                 input_shape=(227, 227, 3),
+                 classes_num=10,
+                 **kwargs):
+        self.input_shape = input_shape
+        self.classes_num = classes_num
+        super().__init__(**kwargs)
+      
+    def build(self):
+        x_in = layers.Input(shape=self.input_shape, name="image")
 
         x = layers.Conv2D(
             filters=96,
@@ -117,8 +125,8 @@ class AlexNet(KerasModel):
         x = layers.Dropout(0.5)(x)
 
         x_out = layers.Dense(
-            classes_num,
+            self.classes_num,
             activation='softmax'
         )(x)
         
-        self.setup_model(x_in, x_out)
+        self.setup_model(x_in, x_out, name="AlexNet")
