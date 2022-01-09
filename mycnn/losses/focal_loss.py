@@ -1,45 +1,8 @@
 # -*- coding: utf-8 -*-
 
-"""
-基於 Keras API 來實現特殊 loss function
-"""
-
 import numpy as np
-from keras import backend as K
+from tensorflow.keras import backend as K
 import tensorflow as tf
-from theano import tensor as T
-
-
-def DiceLoss(targets, inputs, smooth=1e-6):
-    inputs = K.flatten(inputs)
-    targets = K.flatten(targets)
-    
-    intersection = K.sum(K.dot(targets, inputs))
-    dice = (2*intersection + smooth) / (K.sum(targets) + K.sum(inputs) + smooth)
-    return 1 - dice
-
-
-def DiceBCELoss(targets, inputs, smooth=1e-6):
-    inputs = K.flatten(inputs)
-    targets = K.flatten(targets)
-    
-    BCE = K.binary_crossentropy(targets, inputs)
-    intersection = K.sum(K.dot(targets, inputs))    
-    dice_loss = 1 - (2*intersection + smooth) / (K.sum(targets) + K.sum(inputs) + smooth)
-    Dice_BCE = BCE + dice_loss
-    return Dice_BCE
-
-
-def IoULoss(targets, inputs, smooth=1e-6):
-    inputs = K.flatten(inputs)
-    targets = K.flatten(targets)
-    
-    intersection = K.sum(K.dot(targets, inputs))
-    total = K.sum(targets) + K.sum(inputs)
-    union = total - intersection
-    
-    IoU = (intersection + smooth) / (union + smooth)
-    return 1 - IoU
 
 
 ALPHA = 0.8
@@ -52,8 +15,7 @@ def FocalLoss(targets, inputs, alpha=ALPHA, gamma=GAMMA):
     BCE_EXP = K.exp(-BCE)
     focal_loss = K.mean(alpha * K.pow((1-BCE_EXP), gamma) * BCE)
     return focal_loss
-    
-    
+
 
 def binary_focal_loss(gamma=2., alpha=.25):
     """
@@ -84,10 +46,10 @@ def binary_focal_loss(gamma=2., alpha=.25):
         # Clip the prediciton value
         y_pred = K.clip(y_pred, epsilon, 1.0 - epsilon)
         # Calculate p_t
-        p_t = T.where(K.equal(y_true, 1), y_pred, 1 - y_pred)  # tf.where -> T.where
+        p_t = tf.where(K.equal(y_true, 1), y_pred, 1 - y_pred)
         # Calculate alpha_t
         alpha_factor = K.ones_like(y_true) * alpha
-        alpha_t = T.where(K.equal(y_true, 1), alpha_factor, 1 - alpha_factor)  # tf.where -> T.where
+        alpha_t = tf.where(K.equal(y_true, 1), alpha_factor, 1 - alpha_factor)
         # Calculate cross entropy
         cross_entropy = -K.log(p_t)
         weight = alpha_t * K.pow((1 - p_t), gamma)

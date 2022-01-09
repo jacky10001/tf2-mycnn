@@ -2,6 +2,18 @@
 
 import json
 
+
+def load_txt(filepath):
+    with open(filepath, 'r', encoding='UTF-8') as file:
+        read_data = file.read().splitlines()
+    return read_data
+
+
+def save_txt(filepath, txtdata, end='\n'):
+    with open(filepath, 'w') as file:
+        for content in txtdata:
+            file.write(str(content)+end)
+
     
 def save_json(filepath, data_dict):
     """ 
