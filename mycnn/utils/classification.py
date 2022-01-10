@@ -57,10 +57,10 @@ def plot_confusion_matrix(cm: np.ndarray,
     lb_loc = np.arange(len(target_names))
     
     # 圖表設定
-    plt.figure(figsize=(12,8), dpi=120)
+    plt.figure(figsize=(10,6), dpi=80)
     
     # 文字設定
-    fontsize = 14
+    fontsize = 12
     va = 'center'
     ha = 'center'
     rows, cols = np.meshgrid(lb_loc, lb_loc)
