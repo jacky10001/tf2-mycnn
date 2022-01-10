@@ -212,6 +212,9 @@ class KerasModel(object):
 
     @check_state("built", "training")
     def train(self, tra_x, tra_y, val_x, val_y, last_checkpoint=""):
+        """
+        使用 tf.keras.Model 原 fit 方法
+        """
         if osp.exists(last_checkpoint):
             print(f"[Info] Loading pre-weights from {last_checkpoint}")
             self.__M.load_weights(last_checkpoint)
@@ -226,25 +229,48 @@ class KerasModel(object):
                      callbacks=self.__cbks_list)
 
     @check_state("built", "training")
-    def train_generator(self, tra_generator, val_generator, last_checkpoint=""):
+    def train_dataset(self, tra_dataset, val_dataset, last_checkpoint=""):
+        """
+        使用 tf.keras.Model 原 fit 方法
+        """
         if osp.exists(last_checkpoint):
             print(f"[Info] Loading pre-weights from {last_checkpoint}")
             self.__M.load_weights(last_checkpoint)
         elif not osp.exists(last_checkpoint) and last_checkpoint != "":
             raise FileNotFoundError(f"[Error] No such weights file: {last_checkpoint} "
                                     "Please first by calling `setup_logfile()`")
-        self.__M.fit(tra_generator, validation_data=val_generator,
+        self.__M.fit(tra_dataset, validation_data=val_dataset,
                      epochs=self.__cfg['epochs'],
                      initial_epoch=self.__cfg['initial_epoch'],
                      callbacks=self.__cbks_list)
 
     @check_state("built")
-    def predict(self, x):
+    def pred(self, x):
+        """
+        使用 tf.keras.Model 原 predict 方法
+        """
         return self.__M.predict(x, batch_size=self.__cfg['batch_size'])
 
     @check_state("built")
-    def evaluate(self, x, y):
+    def pred_dataset(self, pred_dataset):
+        """
+        使用 tf.keras.Model 原 predict 方法
+        """
+        return self.__M.predict(pred_dataset)
+
+    @check_state("built")
+    def eval(self, x, y):
+        """
+        使用 tf.keras.Model 原 evaluate 方法
+        """
         return self.__M.evaluate(x=x, y=y, batch_size=self.__cfg['batch_size'])
+
+    @check_state("built")
+    def eval_dataset(self, eval_dataset):
+        """
+        使用 tf.keras.Model 原 evaluate 方法
+        """
+        return self.__M.evaluate(eval_dataset)
     
     @check_filepath(mode="save", ext=".json")
     def export_json(self, filepath: str):
