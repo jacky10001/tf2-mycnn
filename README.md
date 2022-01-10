@@ -11,10 +11,12 @@
   ** **不採用** ** Subclassing Model 的繼承機制來訪問 `tf.keras.Model` 原有屬性/方法。
 - 將常見的 Keras 用法寫進 `KerasModel` 類別方法中，只需要設定部分參數即可。
 - 藉由繼承 `KerasModel` 來實現各種 CNN Model，同時允許使用 `tf.keras.Model` 原有方法。  
-  (前提是未被 `KerasModel` 覆蓋的原方法。如: `compile()`、`fit()`、`fit_generator()`...等等。)
-- 一些評估用的工具程式實現。
+  (必須是未被 `KerasModel` 覆蓋的原方法。如: `compile()`、`fit()`、`evaluate()`、`predict()` . . . 等等。)
+- 評估模型性能的工具程式。
 
 ## Todo
+
+### Classification
 
 - [x] LeNet-5
 - [x] AlexNet
@@ -26,8 +28,19 @@
 - [ ] ResNet-18
 - [ ] ResNet-50
 - [ ] ResNet-101
+
+### Segmentation
+
 - [ ] FCN
 - [ ] UNet
-- [ ] SSD
+
+### Object Detection
+
+- [ ] SSD300
 - [ ] RCNN
+
+### Others
+
+- [ ] 環境建置說明
+- [ ] 程式範例說明
 - [ ] 相關文獻整理
