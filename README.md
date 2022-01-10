@@ -20,14 +20,9 @@
 
 - [x] LeNet-5
 - [x] AlexNet
-- [ ] VGG16
-- [ ] VGG19
-- [ ] Inception v1
-- [ ] Inception v2
-- [ ] Inception v3
-- [ ] ResNet-18
-- [ ] ResNet-50
-- [ ] ResNet-101
+- [x] VGG11, VGG13, VGG16, VGG19
+- [ ] Inception v1, v2, v3
+- [ ] ResNet-18, ResNet-50, ResNet-101
 
 ### Segmentation
 
