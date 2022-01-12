@@ -1,18 +1,22 @@
 # -*- coding: utf-8 -*-
+""" VGG Module
+
+Note:
+- Convolutional Layer 都用上 BatchNormalization Layer
+- Fully Connection Layer 加入 Dropout Layer 機制
+"""
 
 import tensorflow as tf
 from tensorflow.keras import layers
 from .core.base_model import KerasModel
 
 
-class VGG11(KerasModel):  
+class VGG11(KerasModel):
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=1000,
                  **kwargs):
-        """ VGG11 (Type-A)
-        Note: 有加入 BatchNormalization Layer
-        """
+        """ VGG11 (Type-A) """
         self.input_shape = input_shape
         self.classes_num = classes_num
         super().__init__(**kwargs)
@@ -90,14 +94,12 @@ class VGG11(KerasModel):
         self.setup_model(x_in, x_out, name="VGG11")
 
 
-class VGG13(KerasModel):  
+class VGG13(KerasModel):
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=1000,
                  **kwargs):
-        """ VGG11 (Type-B)
-        Note: 有加入 BatchNormalization Layer
-        """
+        """ VGG11 (Type-B) """
         self.input_shape = input_shape
         self.classes_num = classes_num
         super().__init__(**kwargs)
@@ -181,14 +183,12 @@ class VGG13(KerasModel):
         self.setup_model(x_in, x_out, name="VGG13")
 
 
-class VGG16(KerasModel):  
+class VGG16(KerasModel):
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=1000,
                  **kwargs):
-        """ VGG16 (Type-D)
-        Note: 有加入 BatchNormalization Layer
-        """
+        """ VGG16 (Type-D) """
         self.input_shape = input_shape
         self.classes_num = classes_num
         super().__init__(**kwargs)
@@ -282,14 +282,12 @@ class VGG16(KerasModel):
         self.setup_model(x_in, x_out, name="VGG16")
 
 
-class VGG19(KerasModel):  
+class VGG19(KerasModel):
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=1000,
                  **kwargs):
-        """ VGG19 (Type-E)
-        Note: 有加入 BatchNormalization Layer
-        """
+        """ VGG19 (Type-E) """
         self.input_shape = input_shape
         self.classes_num = classes_num
         super().__init__(**kwargs)
