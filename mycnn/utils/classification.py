@@ -18,10 +18,12 @@ def export_classification_report(tr: np.ndarray,
                                  pr: np.ndarray,
                                  pb: np.ndarray,
                                  target_names: list,
-                                 logpath:str):
-    from time import sleep
-    sleep(1)
-    
+                                 logpath:str,
+                                 verbose=True):
+    """
+    Export Classification Report with the scikit-learn (a ML API).
+
+    """    
     lb_ids = [n for n in range(len(target_names))]
     
     # 預測結果
@@ -35,12 +37,14 @@ def export_classification_report(tr: np.ndarray,
     
     # 混淆矩陣
     cm_report = confusion_matrix(tr, pr)
+    if verbose: print(cm_report, "\n")
     cm = pd.DataFrame(cm_report, index=lb_ids, columns=lb_ids)
     cm.to_csv(logpath+"/Confusion Matrix.csv", encoding='utf-8')
     
     # 輸出分類報告
     cls_rep_text = classification_report(tr, pr, target_names=target_names)
     cls_rep_json = classification_report(tr, pr, target_names=target_names, output_dict=True)
+    if verbose: print(cls_rep_text, "\n")
     save_txt(logpath+"/Classification Report.txt", cls_rep_text, end='')
     save_json(logpath+"/Classification Report.json", cls_rep_json)
     
