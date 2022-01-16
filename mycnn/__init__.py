@@ -10,6 +10,9 @@ from .vgg import VGG11
 from .vgg import VGG13
 from .vgg import VGG16
 from .vgg import VGG19
+from .resnet import ResNet18
+from .resnet import ResNet50
+from .resnet import ResNet101
 
 __version__ = "v0.22.01.10"
 __maintainer__ = "Jacky"
