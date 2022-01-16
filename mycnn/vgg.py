@@ -12,11 +12,11 @@ from .core.base_model import KerasModel
 
 
 class VGG11(KerasModel):
+    """ VGG11 (Type-A) """
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=1000,
                  **kwargs):
-        """ VGG11 (Type-A) """
         self.input_shape = input_shape
         self.classes_num = classes_num
         super().__init__(**kwargs)
@@ -95,11 +95,11 @@ class VGG11(KerasModel):
 
 
 class VGG13(KerasModel):
+    """ VGG11 (Type-B) """
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=1000,
                  **kwargs):
-        """ VGG11 (Type-B) """
         self.input_shape = input_shape
         self.classes_num = classes_num
         super().__init__(**kwargs)
@@ -184,11 +184,11 @@ class VGG13(KerasModel):
 
 
 class VGG16(KerasModel):
+    """ VGG16 (Type-D) """
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=1000,
                  **kwargs):
-        """ VGG16 (Type-D) """
         self.input_shape = input_shape
         self.classes_num = classes_num
         super().__init__(**kwargs)
@@ -283,11 +283,11 @@ class VGG16(KerasModel):
 
 
 class VGG19(KerasModel):
+    """ VGG19 (Type-E) """
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=1000,
                  **kwargs):
-        """ VGG19 (Type-E) """
         self.input_shape = input_shape
         self.classes_num = classes_num
         super().__init__(**kwargs)
