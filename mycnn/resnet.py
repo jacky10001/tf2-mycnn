@@ -53,11 +53,11 @@ class ResNet18(KerasModel):
         x_in = layers.Input(shape=self.input_shape, name="image")
 
         # input stem
-        x = layers.ZeroPadding2D(padding=(3, 3), name='conv1_pad')(x_in)
-        x = layers.Conv2D(64, 7, strides=2, name='conv1_conv')(x)
+        x = layers.ZeroPadding2D(padding=(3,3), name='conv1_pad')(x_in)
+        x = layers.Conv2D(64, (7,7), strides=2, name='conv1_conv')(x)
         x = layers.BatchNormalization(name="conv1_bn")(x)
         x = layers.ReLU(name="conv1_relu")(x)
-        x = layers.ZeroPadding2D(padding=((1, 1), (1, 1)), name='pool_pad')(x)
+        x = layers.ZeroPadding2D(padding=((1,1),(1,1)), name='pool_pad')(x)
         x = layers.MaxPooling2D(pool_size=(3,3), strides=(2,2), name="pool")(x)
         # x = layers.MaxPooling2D(pool_size=(3,3), strides=(2,2), padding="same", name="pool")(x)
 
@@ -105,11 +105,11 @@ class ResNet50(KerasModel):
         x_in = layers.Input(shape=self.input_shape, name="image")
 
         # input stem
-        x = layers.ZeroPadding2D(padding=(3, 3), name='conv1_pad')(x_in)
-        x = layers.Conv2D(64, 7, strides=2, name='conv1_conv')(x)
+        x = layers.ZeroPadding2D(padding=(3,3), name='conv1_pad')(x_in)
+        x = layers.Conv2D(64, (7,7), strides=2, name='conv1_conv')(x)
         x = layers.BatchNormalization(name="conv1_bn")(x)
         x = layers.ReLU(name="conv1_relu")(x)
-        x = layers.ZeroPadding2D(padding=((1, 1), (1, 1)), name='pool_pad')(x)
+        x = layers.ZeroPadding2D(padding=((1,1),(1,1)), name='pool_pad')(x)
         x = layers.MaxPooling2D(pool_size=(3,3), strides=(2,2), name="pool")(x)
         # x = layers.MaxPooling2D(pool_size=(3,3), strides=(2,2), padding="same", name="pool")(x)
 
@@ -165,11 +165,11 @@ class ResNet101(KerasModel):
         x_in = layers.Input(shape=self.input_shape, name="image")
 
         # input stem
-        x = layers.ZeroPadding2D(padding=(3, 3), name='conv1_pad')(x_in)
-        x = layers.Conv2D(64, 7, strides=2, name='conv1_conv')(x)
+        x = layers.ZeroPadding2D(padding=(3,3), name='conv1_pad')(x_in)
+        x = layers.Conv2D(64, (7,7), strides=2, name='conv1_conv')(x)
         x = layers.BatchNormalization(name="conv1_bn")(x)
         x = layers.ReLU(name="conv1_relu")(x)
-        x = layers.ZeroPadding2D(padding=((1, 1), (1, 1)), name='pool_pad')(x)
+        x = layers.ZeroPadding2D(padding=((1,1),(1,1)), name='pool_pad')(x)
         x = layers.MaxPooling2D(pool_size=(3,3), strides=(2,2), name="pool")(x)
         # x = layers.MaxPooling2D(pool_size=(3,3), strides=(2,2), padding="same", name="pool")(x)
 
