@@ -80,7 +80,7 @@ class GoogleNet(KerasModel):
 
         # 224x224x3 -> 112x112x64
         x = layers.ZeroPadding2D(padding=(3,3), name='conv1_pad')(x_in)
-        x = layers.Conv2D(64, (7,7), strides=2, name='conv1_conv')(x)
+        x = layers.Conv2D(64, (7,7), strides=(2,2), name='conv1_conv')(x)
         x = layers.BatchNormalization(name="conv1_bn")(x)
         x = layers.ReLU(name="conv1_relu")(x)
         x = layers.ZeroPadding2D(padding=((1,1),(1,1)), name='pool1_pad')(x)
