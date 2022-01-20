@@ -82,10 +82,11 @@ class KerasModel(object):
     
     def build(self) -> None:
         """
-        建立神經網路模型方法
-        1. 覆寫 method 的方式，來搭建神經網路架構
+        覆寫 method 的方式，來建構神經網路模型
+        1. 覆蓋 build() 方法來搭建神經網路架構
         2. 使用 __init__() 方法來自行定義所需參數
         3. 呼叫 self.setup_model(inputs, outputs)
+           傳入輸入張量 及輸出層 list
 
         e.g.
         class MyCNN(KerasModel):
@@ -108,7 +109,15 @@ class KerasModel(object):
 
     @implement_model
     def setup_model(self, inputs, outputs, **kwargs) -> tuple:
-        """ 載入 JSON 結構檔，來建立神經網路模型 """
+        """
+        實例化(instance)神經網路模型
+        類似於 Keras Functional Model API 的用法
+
+        Arguments
+        inputs:  輸入張量 or 輸入張量列表 (list)，使用 Keras Input API
+        outputs: 輸出張量 or 輸出張量列表 (list)，使用 Keras Layer API
+        name:    String，神經網路的名稱
+        """
         return inputs, outputs
     
     @implement_model

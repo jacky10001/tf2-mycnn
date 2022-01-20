@@ -6,55 +6,62 @@ from tensorflow.keras import models
 from .core.base_model import KerasModel
 
 
-class InceptionBlockV1(models.Model):
-    def __init__(self, filters, **kwargs) -> None:
+class InceptionV1(models.Model):
+    def __init__(self,
+                 c1x1: int,
+                 c3x3red: int,
+                 c3x3: int,
+                 c5x5red: int,
+                 c5x5: int,
+                 p1x1: int,
+                 **kwargs) -> None:
         super().__init__(**kwargs)
-        self.a_conv1x1 = layers.Conv2D(filters[0], (1,1), padding="same")
+        self.a_conv1x1 = layers.Conv2D(c1x1, (1,1), padding="same")
         self.a_conv1x1_bn = layers.BatchNormalization()
 
-        self.b_conv1x1 = layers.Conv2D(filters[1], (1,1), padding="same")
+        self.b_conv1x1 = layers.Conv2D(c3x3red, (1,1), padding="same")
         self.b_conv1x1_bn = layers.BatchNormalization()
-        self.b_conv3x3 = layers.Conv2D(filters[2], (3,3), padding="same")
+        self.b_conv3x3 = layers.Conv2D(c3x3, (3,3), padding="same")
         self.b_conv3x3_bn = layers.BatchNormalization()
 
-        self.c_conv1x1 = layers.Conv2D(filters[3], (1,1), padding="same")
+        self.c_conv1x1 = layers.Conv2D(c5x5red, (1,1), padding="same")
         self.c_conv1x1_bn = layers.BatchNormalization()
-        self.c_conv5x5 = layers.Conv2D(filters[4], (5,5), padding="same")
+        self.c_conv5x5 = layers.Conv2D(c5x5, (5,5), padding="same")
         self.c_conv5x5_bn = layers.BatchNormalization()
 
-        self.d_conv1x1 = layers.Conv2D(filters[5], (1,1), padding="same")
+        self.d_conv1x1 = layers.Conv2D(p1x1, (1,1), padding="same")
         self.d_conv1x1_bn = layers.BatchNormalization()
     
-    def call(self, inputs):
-        x1 = self.a_conv1x1(inputs)
+    def call(self, x):
+        x1 = self.a_conv1x1(x)
         x1 = self.a_conv1x1_bn(x1)
         x1 = layers.ReLU()(x1)
         
-        x2 = self.b_conv1x1(inputs)
+        x2 = self.b_conv1x1(x)
         x2 = self.b_conv1x1_bn(x2)
         x2 = layers.ReLU()(x2)
         x2 = self.b_conv3x3(x2)
         x2 = self.b_conv3x3_bn(x2)
         x2 = layers.ReLU()(x2)
         
-        x3 = self.c_conv1x1(inputs)
+        x3 = self.c_conv1x1(x)
         x3 = self.c_conv1x1_bn(x3)
         x3 = layers.ReLU()(x3)
         x3 = self.c_conv5x5(x3)
         x3 = self.c_conv5x5_bn(x3)
         x3 = layers.ReLU()(x3)
 
-        x4 = layers.MaxPooling2D((3, 3), strides=(1,1), padding="same")(inputs)
+        x4 = layers.MaxPooling2D((3, 3), strides=(1,1), padding="same")(x)
         x4 = self.d_conv1x1(x4)
         x4 = self.d_conv1x1_bn(x4)
+        x4 = layers.ReLU()(x4)
 
-        x = layers.Concatenate()([x1,x2,x3,x4])
-        return x
+        return layers.Concatenate()([x1,x2,x3,x4])
 
 
-class InceptionV1(KerasModel):
+class GoogleNet(KerasModel):
     """
-    InceptionV1
+    GoogleNet (InceptionV1)
 
     Note:
     論文有提到輔助分類器，這邊暫時不使用，因為訓練初期並不會有太大影響
@@ -63,7 +70,7 @@ class InceptionV1(KerasModel):
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=1000,
-                 **kwargs):
+                 **kwargs) -> None:
         self.input_shape = input_shape
         self.classes_num = classes_num
         super().__init__(**kwargs)
@@ -90,27 +97,27 @@ class InceptionV1(KerasModel):
         x = layers.MaxPooling2D((3,3), strides=(2,2), name="pool2")(x)
 
         # 56x56x192 -> 14x14x480
-        x = InceptionBlockV1([64,96,128,16,32,32], name="inception_3a")(x)
-        x = InceptionBlockV1([128,128,192,32,96,64], name="inception_3b")(x)
+        x = InceptionV1(64,96,128,16,32,32, name="inception_3a")(x)
+        x = InceptionV1(128,128,192,32,96,64, name="inception_3b")(x)
         x = layers.ZeroPadding2D(padding=((1,1),(1,1)), name='pool3_pad')(x)
         x = layers.MaxPooling2D((3,3), strides=(2,2), name="pool3")(x)
 
         # 14x14x480 -> 7x7x832
-        x = InceptionBlockV1([192,96,208,16,48,64], name="inception_4a")(x)
-        x = InceptionBlockV1([160,112,224,24,64,64], name="inception_4b")(x)
-        x = InceptionBlockV1([128,128,256,24,64,64], name="inception_4c")(x)
-        x = InceptionBlockV1([112,144,288,32,64,64], name="inception_4d")(x)
-        x = InceptionBlockV1([256,160,320,32,128,128], name="inception_4e")(x)
+        x = InceptionV1(192,96,208,16,48,64, name="inception_4a")(x)
+        x = InceptionV1(160,112,224,24,64,64, name="inception_4b")(x)
+        x = InceptionV1(128,128,256,24,64,64, name="inception_4c")(x)
+        x = InceptionV1(112,144,288,32,64,64, name="inception_4d")(x)
+        x = InceptionV1(256,160,320,32,128,128, name="inception_4e")(x)
         x = layers.ZeroPadding2D(padding=((1,1),(1,1)), name='pool4_pad')(x)
         x = layers.MaxPooling2D((3,3), strides=(2,2), name="pool4")(x)
 
         # 7x7x832 -> 1x1x1024
-        x = InceptionBlockV1([256,160,320,32,128,128], name="inception_5a")(x)
-        x = InceptionBlockV1([384,192,384,48,128,128], name="inception_5b")(x)
+        x = InceptionV1(256,160,320,32,128,128, name="inception_5a")(x)
+        x = InceptionV1(384,192,384,48,128,128, name="inception_5b")(x)
 
         x = layers.GlobalAveragePooling2D(name='avg_pool')(x)
         x = layers.Dropout(0.4)(x)
         x = layers.Dense(self.classes_num, activation='linear', name="linear")(x)
         x_out = layers.Dense(self.classes_num, activation='softmax', name="softmax")(x)
         
-        self.setup_model(x_in, x_out, name="InceptionV1")
+        self.setup_model(x_in, x_out, name="GoogLeNet")

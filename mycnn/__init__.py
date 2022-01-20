@@ -13,7 +13,8 @@ from .vgg import VGG19
 from .resnet import ResNet18
 from .resnet import ResNet50
 from .resnet import ResNet101
-from .inception import InceptionV1
+from .googlenet import GoogleNet
+from .inception_v3 import InceptionV3
 
-__version__ = "v0.22.01.17"
+__version__ = "v0.22.01.20"
 __maintainer__ = "Jacky"
