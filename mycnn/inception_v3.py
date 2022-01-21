@@ -242,7 +242,7 @@ class InceptionD(models.Model):
         x1 = self.a1_conv3x3red(x)
         x1 = self.a1_conv3x3red_bn(x1)
         x1 = self.a1_conv3x3red_act(x1)
-        x1 = self.a2_conv3x3(x)
+        x1 = self.a2_conv3x3(x1)
         x1 = self.a2_conv3x3_bn(x1)
         x1 = self.a2_conv3x3_act(x1)
         
@@ -287,7 +287,7 @@ class InceptionE(models.Model):
         self.b3_conv3x1 = layers.Conv2D(b_c3x3[2], (3,1), padding="same", use_bias=use_bias)
         self.b3_conv3x1_bn = layers.BatchNormalization(scale=scale)
         self.b3_conv3x1_act = layers.ReLU()
-        self.mix1 = layers.concatenate()
+        self.mix1 = layers.Concatenate()
 
         self.c1_conv3x3red = layers.Conv2D(c_c3x3[0], (1,1), padding="same", use_bias=use_bias)
         self.c1_conv3x3red_bn = layers.BatchNormalization(scale=scale)
@@ -301,13 +301,13 @@ class InceptionE(models.Model):
         self.c4_conv3x1 = layers.Conv2D(c_c3x3[3], (3,1), padding="same", use_bias=use_bias)
         self.c4_conv3x1_bn = layers.BatchNormalization(scale=scale)
         self.c4_conv3x1_act = layers.ReLU()
-        self.mix2 = layers.concatenate()
+        self.mix2 = layers.Concatenate()
 
         self.d1_pool = layers.AveragePooling2D((3,3), strides=(1,1), padding='same')
         self.d2_conv1x1 = layers.Conv2D(d_p1x1[0], (1,1), padding="same", use_bias=use_bias)
         self.d2_conv1x1_bn = layers.BatchNormalization(scale=scale)
         self.d2_conv1x1_act = layers.ReLU()
-        self.mix = layers.concatenate()
+        self.mix = layers.Concatenate()
     
     def call(self, x):
         x1 = self.a1_conv1x1(x)
@@ -319,30 +319,30 @@ class InceptionE(models.Model):
         x2 = self.b1_conv3x3red_act(x2)
         x2_1 = self.b2_conv1x3(x2)
         x2_1 = self.b2_conv1x3_bn(x2_1)
-        x2_1 = self.b2_conv1x3_act()(x2_1)
+        x2_1 = self.b2_conv1x3_act(x2_1)
         x2_2 = self.b3_conv3x1(x2)
         x2_2 = self.b3_conv3x1_bn(x2_2)
-        x2_2 = self.b3_conv3x1_act()(x2_2)
+        x2_2 = self.b3_conv3x1_act(x2_2)
         x2 = self.mix1([x2_1, x2_2])
 
         x3 = self.c1_conv3x3red(x)
         x3 = self.c1_conv3x3red_bn(x3)
-        x3 = self.c1_conv3x3red_act()(x3)
+        x3 = self.c1_conv3x3red_act(x3)
         x3 = self.c2_conv3x3(x3)
         x3 = self.c2_conv3x3_bn(x3)
-        x3 = self.c2_conv3x3_act()(x3)
+        x3 = self.c2_conv3x3_act(x3)
         x3_1 = self.c3_conv1x3(x3)
         x3_1 = self.c3_conv1x3_bn(x3_1)
-        x3_1 = self.c3_conv1x3_act()(x3_1)
+        x3_1 = self.c3_conv1x3_act(x3_1)
         x3_2 = self.c4_conv3x1(x3)
         x3_2 = self.c4_conv3x1_bn(x3_2)
-        x3_2 = self.c4_conv3x1_act()(x3_2)
+        x3_2 = self.c4_conv3x1_act(x3_2)
         x3 = self.mix2([x3_1, x3_2])
 
         x4 = self.d1_pool(x)
         x4 = self.d2_conv1x1(x4)
         x4 = self.d2_conv1x1_bn(x4)
-        x4 = self.d2_conv1x1_act()(x4)
+        x4 = self.d2_conv1x1_act(x4)
 
         return self.mix([x1,x2,x3,x4])
 
@@ -350,7 +350,9 @@ class InceptionE(models.Model):
 class InceptionV3(KerasModel):
     """
     Inception V3
-    參考 Keras 及 PyTorch 的 API，來實作 Inception V3
+    參考 Keras 及 PyTorch 的 Inception V3 API
+
+    論文提到使用了三種 Inception Module，每個
 
     Note:
     論文有提到輔助分類器，這邊暫時不使用，因為訓練初期並不會有太大影響
