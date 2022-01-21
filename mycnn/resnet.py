@@ -13,12 +13,20 @@ class ResBlock(models.Model):
         if conv_shortcut:
             self.conv_shortcut = layers.Conv2D(4*filters, (1,1), strides=strides)
             self.bn_shortcut = layers.BatchNormalization()
+        
         self.conv1 = layers.Conv2D(filters, (1,1), strides=strides)
         self.bn1 = layers.BatchNormalization()
+        self.act1 = layers.ReLU()
+
         self.conv2 = layers.Conv2D(filters, (3,3), padding="same")
         self.bn2 = layers.BatchNormalization()
+        self.act2 = layers.ReLU()
+
         self.conv3 = layers.Conv2D(4*filters, (1,1))
         self.bn3 = layers.BatchNormalization()
+        self.act3 = layers.ReLU()
+
+        self.add = layers.Add()
     
     def call(self, inputs):
         if self._conv_shortcut:
@@ -28,14 +36,14 @@ class ResBlock(models.Model):
             x_shortcut = inputs
         x = self.conv1(inputs)
         x = self.bn1(x)
-        x = layers.ReLU()(x)
+        x = self.act1(x)
         x = self.conv2(x)
         x = self.bn2(x)
-        x = layers.ReLU()(x)
+        x = self.act2(x)
         x = self.conv3(x)
         x = self.bn3(x)
-        x = layers.Add()([x,x_shortcut])
-        x = layers.ReLU()(x)
+        x = self.add([x,x_shortcut])
+        x = self.act3(x)
         return x
 
 

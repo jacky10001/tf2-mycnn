@@ -18,43 +18,50 @@ class InceptionV1(models.Model):
         super().__init__(**kwargs)
         self.a_conv1x1 = layers.Conv2D(c1x1, (1,1), padding="same")
         self.a_conv1x1_bn = layers.BatchNormalization()
+        self.a_conv1x1_act = layers.ReLU()
 
         self.b_conv1x1 = layers.Conv2D(c3x3red, (1,1), padding="same")
         self.b_conv1x1_bn = layers.BatchNormalization()
+        self.b_conv1x1_act = layers.ReLU()
         self.b_conv3x3 = layers.Conv2D(c3x3, (3,3), padding="same")
         self.b_conv3x3_bn = layers.BatchNormalization()
+        self.b_conv3x3_act = layers.ReLU()
 
         self.c_conv1x1 = layers.Conv2D(c5x5red, (1,1), padding="same")
         self.c_conv1x1_bn = layers.BatchNormalization()
+        self.c_conv1x1_act = layers.ReLU()
         self.c_conv5x5 = layers.Conv2D(c5x5, (5,5), padding="same")
         self.c_conv5x5_bn = layers.BatchNormalization()
+        self.c_conv5x5_act = layers.ReLU()
 
+        self.d_pool = layers.MaxPooling2D((3, 3), strides=(1,1), padding="same")
         self.d_conv1x1 = layers.Conv2D(p1x1, (1,1), padding="same")
         self.d_conv1x1_bn = layers.BatchNormalization()
+        self.d_conv1x1_act = layers.ReLU()
     
     def call(self, x):
         x1 = self.a_conv1x1(x)
         x1 = self.a_conv1x1_bn(x1)
-        x1 = layers.ReLU()(x1)
+        x1 = self.a_conv1x1_act(x1)
         
         x2 = self.b_conv1x1(x)
         x2 = self.b_conv1x1_bn(x2)
-        x2 = layers.ReLU()(x2)
+        x2 = self.b_conv1x1_act()(x2)
         x2 = self.b_conv3x3(x2)
         x2 = self.b_conv3x3_bn(x2)
-        x2 = layers.ReLU()(x2)
+        x2 = self.b_conv3x3_act(x2)
         
         x3 = self.c_conv1x1(x)
         x3 = self.c_conv1x1_bn(x3)
-        x3 = layers.ReLU()(x3)
+        x3 = self.c_conv1x1_act()(x3)
         x3 = self.c_conv5x5(x3)
         x3 = self.c_conv5x5_bn(x3)
-        x3 = layers.ReLU()(x3)
+        x3 = self.c_conv5x5_act(x3)
 
-        x4 = layers.MaxPooling2D((3, 3), strides=(1,1), padding="same")(x)
+        x4 = self.d_pool(x)
         x4 = self.d_conv1x1(x4)
         x4 = self.d_conv1x1_bn(x4)
-        x4 = layers.ReLU()(x4)
+        x4 = self.d_conv1x1_act(x4)
 
         return layers.Concatenate()([x1,x2,x3,x4])
 

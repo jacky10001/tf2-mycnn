@@ -19,50 +19,60 @@ class InceptionA(models.Model):
         super().__init__(**kwargs)
         self.a1_conv1x1 = layers.Conv2D(c1x1[0], (1,1), padding="same", use_bias=use_bias)
         self.a1_conv1x1_bn = layers.BatchNormalization(scale=scale)
+        self.a1_conv1x1_act = layers.ReLU()
 
         self.b1_conv5x5red = layers.Conv2D(c5x5[0], (1,1), padding="same", use_bias=use_bias)
         self.b1_conv5x5red_bn = layers.BatchNormalization(scale=scale)
+        self.b1_conv1x1_act = layers.ReLU()
         self.b2_conv5x5 = layers.Conv2D(c5x5[1], (5,5), padding="same", use_bias=use_bias)
         self.b2_conv5x5_bn = layers.BatchNormalization(scale=scale)
+        self.b2_conv1x1_act = layers.ReLU()
 
         self.c1_conv3x3red = layers.Conv2D(c3x3[0], (1,1), padding="same", use_bias=use_bias)
         self.c1_conv3x3red_bn = layers.BatchNormalization(scale=scale)
+        self.c1_conv1x1_act = layers.ReLU()
         self.c2_conv3x3 = layers.Conv2D(c3x3[1], (3,3), padding="same", use_bias=use_bias)
         self.c2_conv3x3_bn = layers.BatchNormalization(scale=scale)
+        self.c2_conv1x1_act = layers.ReLU()
         self.c3_conv3x3 = layers.Conv2D(c3x3[2], (3,3), padding="same", use_bias=use_bias)
         self.c3_conv3x3_bn = layers.BatchNormalization(scale=scale)
+        self.c3_conv1x1_act = layers.ReLU()
 
-        self.d1_conv1x1 = layers.Conv2D(p1x1[0], (1,1), padding="same", use_bias=use_bias)
-        self.d1_conv1x1_bn = layers.BatchNormalization(scale=scale)
+        self.d1_pool = layers.AveragePooling2D((3,3), strides=(1,1), padding='same')
+        self.d2_conv1x1 = layers.Conv2D(p1x1[0], (1,1), padding="same", use_bias=use_bias)
+        self.d2_conv1x1_bn = layers.BatchNormalization(scale=scale)
+        self.d2_conv1x1_act = layers.ReLU()
+
+        self.mix = layers.Concatenate()
     
     def call(self, x):
         x1 = self.a1_conv1x1(x)
         x1 = self.a1_conv1x1_bn(x1)
-        x1 = layers.ReLU()(x1)
+        x1 = self.a1_conv1x1_act(x1)
         
         x2 = self.b1_conv5x5red(x)
         x2 = self.b1_conv5x5red_bn(x2)
-        x2 = layers.ReLU()(x2)
+        x2 = self.b1_conv1x1_act(x2)
         x2 = self.b2_conv5x5(x2)
         x2 = self.b2_conv5x5_bn(x2)
-        x2 = layers.ReLU()(x2)
+        x2 = self.b2_conv1x1_act(x2)
         
         x3 = self.c1_conv3x3red(x)
         x3 = self.c1_conv3x3red_bn(x3)
-        x3 = layers.ReLU()(x3)
+        x3 = self.c1_conv1x1_act(x3)
         x3 = self.c2_conv3x3(x3)
         x3 = self.c2_conv3x3_bn(x3)
-        x3 = layers.ReLU()(x3)
+        x3 = self.c2_conv1x1_act(x3)
         x3 = self.c3_conv3x3(x3)
         x3 = self.c3_conv3x3_bn(x3)
-        x3 = layers.ReLU()(x3)
+        x3 = self.c3_conv1x1_act(x3)
 
-        x4 = layers.AveragePooling2D((3,3), strides=(1,1), padding='same')(x)
-        x4 = self.d1_conv1x1(x4)
-        x4 = self.d1_conv1x1_bn(x4)
-        x4 = layers.ReLU()(x4)
+        x4 = self.d1_pool(x)
+        x4 = self.d2_conv1x1(x4)
+        x4 = self.d2_conv1x1_bn(x4)
+        x4 = self.d2_conv1x1_act(x4)
 
-        return layers.Concatenate()([x1,x2,x3,x4])
+        return self.mix([x1,x2,x3,x4])
 
 
 class InceptionB(models.Model):
@@ -75,32 +85,40 @@ class InceptionB(models.Model):
         super().__init__(**kwargs)
         self.a1_conv3x3 = layers.Conv2D(a_c3x3[0], (3,3), strides=(2, 2), padding="valid", use_bias=use_bias)
         self.a1_conv3x3_bn = layers.BatchNormalization(scale=scale)
+        self.a1_conv3x3_act = layers.ReLU()
 
         self.b1_conv3x3red = layers.Conv2D(b_c3x3[0], (1,1), padding="same", use_bias=use_bias)
         self.b1_conv3x3red_bn = layers.BatchNormalization(scale=scale)
+        self.b1_conv3x3red_act = layers.ReLU()
         self.b2_conv3x3 = layers.Conv2D(b_c3x3[1], (3,3), padding="same", use_bias=use_bias)
         self.b2_conv3x3_bn = layers.BatchNormalization(scale=scale)
+        self.b2_conv3x3_act = layers.ReLU()
         self.b3_conv3x3 = layers.Conv2D(b_c3x3[2], (3,3), strides=(2,2), padding="valid", use_bias=use_bias)
         self.b3_conv3x3_bn = layers.BatchNormalization(scale=scale)
+        self.b3_conv3x3_act = layers.ReLU()
+
+        self.c1_pool = layers.MaxPooling2D((3,3), strides=(2,2))
+
+        self.mix = layers.Concatenate()
     
     def call(self, x):
         x1 = self.a1_conv3x3(x)
         x1 = self.a1_conv3x3_bn(x1)
-        x1 = layers.ReLU()(x1)
+        x1 = self.a1_conv3x3_act(x1)
         
         x2 = self.b1_conv3x3red(x)
         x2 = self.b1_conv3x3red_bn(x2)
-        x2 = layers.ReLU()(x2)
+        x2 = self.b1_conv3x3red_act(x2)
         x2 = self.b2_conv3x3(x2)
         x2 = self.b2_conv3x3_bn(x2)
-        x2 = layers.ReLU()(x2)
+        x2 = self.b2_conv3x3_act(x2)
         x2 = self.b3_conv3x3(x2)
         x2 = self.b3_conv3x3_bn(x2)
-        x2 = layers.ReLU()(x2)
+        x2 = self.b3_conv3x3_act(x2)
 
-        x3 = layers.MaxPooling2D((3,3), strides=(2,2))(x)
+        x3 = self.c1_pool(x)
 
-        return layers.Concatenate()([x1,x2,x3])
+        return self.mix([x1,x2,x3])
 
 
 class InceptionC(models.Model):
@@ -118,62 +136,74 @@ class InceptionC(models.Model):
 
         self.b1_conv7x7red = layers.Conv2D(b_c7x7[0], (1,1), padding="same", use_bias=use_bias)
         self.b1_conv7x7red_bn = layers.BatchNormalization(scale=scale)
+        self.b1_conv7x7red_act = layers.ReLU()
         self.b2_conv1x7 = layers.Conv2D(b_c7x7[1], (1,7), padding="same", use_bias=use_bias)
         self.b2_conv1x7_bn = layers.BatchNormalization(scale=scale)
-        self.b2_conv7x1 = layers.Conv2D(b_c7x7[2], (7,1), padding="same", use_bias=use_bias)
-        self.b2_conv7x1_bn = layers.BatchNormalization(scale=scale)
+        self.b2_conv1x7_act = layers.ReLU()
+        self.b3_conv7x1 = layers.Conv2D(b_c7x7[2], (7,1), padding="same", use_bias=use_bias)
+        self.b3_conv7x1_bn = layers.BatchNormalization(scale=scale)
+        self.b3_conv7x1_act = layers.ReLU()
 
         self.c1_conv7x7red = layers.Conv2D(c_c7x7[0], (1,1), padding="same", use_bias=use_bias)
         self.c1_conv7x7red_bn = layers.BatchNormalization(scale=scale)
+        self.c1_conv7x7red_act = layers.ReLU()
         self.c2_conv7x1 = layers.Conv2D(c_c7x7[1], (7,1), padding="same", use_bias=use_bias)
         self.c2_conv7x1_bn = layers.BatchNormalization(scale=scale)
+        self.c2_conv7x1_act = layers.ReLU()
         self.c3_conv1x7 = layers.Conv2D(c_c7x7[2], (1,7), padding="same", use_bias=use_bias)
         self.c3_conv1x7_bn = layers.BatchNormalization(scale=scale)
+        self.c3_conv1x7_act = layers.ReLU()
         self.c4_conv7x1 = layers.Conv2D(c_c7x7[3], (7,1), padding="same", use_bias=use_bias)
         self.c4_conv7x1_bn = layers.BatchNormalization(scale=scale)
+        self.c4_conv7x1_act = layers.ReLU()
         self.c5_conv1x7 = layers.Conv2D(c_c7x7[4], (1,7), padding="same", use_bias=use_bias)
         self.c5_conv1x7_bn = layers.BatchNormalization(scale=scale)
+        self.c5_conv1x7_act = layers.ReLU()
 
-        self.d1_conv1x1 = layers.Conv2D(d_p1x1[0], (1,1), padding="same", use_bias=use_bias)
-        self.d1_conv1x1_bn = layers.BatchNormalization(scale=scale)
+        self.d1_pool = layers.AveragePooling2D((3,3), strides=(1,1), padding='same')
+        self.d2_conv1x1 = layers.Conv2D(d_p1x1[0], (1,1), padding="same", use_bias=use_bias)
+        self.d2_conv1x1_bn = layers.BatchNormalization(scale=scale)
+        self.d2_conv1x1_act = layers.ReLU()
+        
+        self.mix = layers.Concatenate()
     
     def call(self, x):
         x1 = self.a1_conv1x1(x)
         x1 = self.a1_conv1x1_bn(x1)
-        x1 = layers.ReLU()(x1)
+        x1 = self.c5_conv1x7_act(x1)
         
         x2 = self.b1_conv7x7red(x)
         x2 = self.b1_conv7x7red_bn(x2)
-        x2 = layers.ReLU()(x2)
+        x2 = self.b1_conv7x7red_act(x2)
         x2 = self.b2_conv1x7(x2)
         x2 = self.b2_conv1x7_bn(x2)
-        x2 = layers.ReLU()(x2)
-        x2 = self.b2_conv7x1(x2)
-        x2 = self.b2_conv7x1_bn(x2)
-        x2 = layers.ReLU()(x2)
+        x2 = self.b2_conv1x7_act(x2)
+        x2 = self.b3_conv7x1(x2)
+        x2 = self.b3_conv7x1_bn(x2)
+        x2 = self.b3_conv7x1_act(x2)
         
         x3 = self.c1_conv7x7red(x)
         x3 = self.c1_conv7x7red_bn(x3)
-        x3 = layers.ReLU()(x3)
+        x3 = self.c1_conv7x7red_act(x3)
         x3 = self.c2_conv7x1(x3)
         x3 = self.c2_conv7x1_bn(x3)
-        x3 = layers.ReLU()(x3)
+        x3 = self.c2_conv7x1_act(x3)
         x3 = self.c3_conv1x7(x3)
         x3 = self.c3_conv1x7_bn(x3)
-        x3 = layers.ReLU()(x3)
+        x3 = self.c3_conv1x7_act(x3)
         x3 = self.c4_conv7x1(x3)
         x3 = self.c4_conv7x1_bn(x3)
-        x3 = layers.ReLU()(x3)
+        x3 = self.c4_conv7x1_act(x3)
         x3 = self.c5_conv1x7(x3)
         x3 = self.c5_conv1x7_bn(x3)
-        x3 = layers.ReLU()(x3)
+        x3 = self.c5_conv1x7_act(x3)
 
-        x4 = layers.AveragePooling2D((3,3), strides=(1,1), padding='same')(x)
-        x4 = self.d1_conv1x1(x4)
-        x4 = self.d1_conv1x1_bn(x4)
-        x4 = layers.ReLU()(x4)
+        x4 = self.d1_pool(x)
+        x4 = self.d2_conv1x1(x4)
+        x4 = self.d2_conv1x1_bn(x4)
+        x4 = self.d2_conv1x1_act(x4)
 
-        return layers.Concatenate()([x1,x2,x3,x4])
+        return self.mix([x1,x2,x3,x4])
 
 
 class InceptionD(models.Model):
@@ -186,42 +216,52 @@ class InceptionD(models.Model):
         super().__init__(**kwargs)
         self.a1_conv3x3red = layers.Conv2D(a_c3x3[0], (1,1), padding="same", use_bias=use_bias)
         self.a1_conv3x3red_bn = layers.BatchNormalization(scale=scale)
+        self.a1_conv3x3red_act = layers.ReLU()
         self.a2_conv3x3 = layers.Conv2D(a_c3x3[1], (3,3), strides=(2,2), padding="valid", use_bias=use_bias)
         self.a2_conv3x3_bn = layers.BatchNormalization(scale=scale)
+        self.a2_conv3x3_act = layers.ReLU()
 
         self.b1_conv7x7x3red = layers.Conv2D(b_c7x7x3[0], (1,1), padding="same", use_bias=use_bias)
         self.b1_conv7x7x3red_bn = layers.BatchNormalization(scale=scale)
+        self.b1_conv7x7x3red_act = layers.ReLU()
         self.b2_conv1x7x3 = layers.Conv2D(b_c7x7x3[1], (1,7), padding="same", use_bias=use_bias)
         self.b2_conv1x7x3_bn = layers.BatchNormalization(scale=scale)
+        self.b2_conv1x7x3_act = layers.ReLU()
         self.b3_conv7x1x3 = layers.Conv2D(b_c7x7x3[2], (7,1), padding="same", use_bias=use_bias)
         self.b3_conv7x1x3_bn = layers.BatchNormalization(scale=scale)
+        self.b2_conv7x1x3_act = layers.ReLU()
         self.b4_conv7x7x3 = layers.Conv2D(b_c7x7x3[3], (3,3), strides=(2,2), padding="valid", use_bias=use_bias)
         self.b4_conv7x7x3_bn = layers.BatchNormalization(scale=scale)
+        self.b4_conv7x7x3_act = layers.ReLU()
+        
+        self.c1_pool = layers.MaxPooling2D((3,3), strides=(2,2))
+
+        self.mix = layers.Concatenate()
     
     def call(self, x):
         x1 = self.a1_conv3x3red(x)
         x1 = self.a1_conv3x3red_bn(x1)
-        x1 = layers.ReLU()(x1)
+        x1 = self.a1_conv3x3red_act(x1)
         x1 = self.a2_conv3x3(x)
         x1 = self.a2_conv3x3_bn(x1)
-        x1 = layers.ReLU()(x1)
+        x1 = self.a2_conv3x3_act(x1)
         
         x2 = self.b1_conv7x7x3red(x)
         x2 = self.b1_conv7x7x3red_bn(x2)
-        x2 = layers.ReLU()(x2)
+        x2 = self.b1_conv7x7x3red_act(x2)
         x2 = self.b2_conv1x7x3(x2)
         x2 = self.b2_conv1x7x3_bn(x2)
-        x2 = layers.ReLU()(x2)
+        x2 = self.b2_conv1x7x3_act(x2)
         x2 = self.b3_conv7x1x3(x2)
         x2 = self.b3_conv7x1x3_bn(x2)
-        x2 = layers.ReLU()(x2)
+        x2 = self.b2_conv7x1x3_act(x2)
         x2 = self.b4_conv7x7x3(x2)
         x2 = self.b4_conv7x7x3_bn(x2)
-        x2 = layers.ReLU()(x2)
+        x2 = self.b4_conv7x7x3_act(x2)
 
-        x3 = layers.MaxPooling2D((3, 3), strides=(2, 2))(x)
+        x3 = self.c1_pool(x)
 
-        return layers.Concatenate()([x1,x2,x3])
+        return self.mix([x1,x2,x3])
 
 
 class InceptionE(models.Model):
@@ -236,62 +276,75 @@ class InceptionE(models.Model):
         super().__init__(**kwargs)
         self.a1_conv1x1 = layers.Conv2D(a_c1x1[0], (1,1), padding="same", use_bias=use_bias)
         self.a1_conv1x1_bn = layers.BatchNormalization(scale=scale)
+        self.a1_conv1x1_act = layers.ReLU()
 
         self.b1_conv3x3red = layers.Conv2D(b_c3x3[0], (1,1), padding="same", use_bias=use_bias)
         self.b1_conv3x3red_bn = layers.BatchNormalization(scale=scale)
+        self.b1_conv3x3red_act = layers.ReLU()
         self.b2_conv1x3 = layers.Conv2D(b_c3x3[1], (1,3), padding="same", use_bias=use_bias)
         self.b2_conv1x3_bn = layers.BatchNormalization(scale=scale)
-        self.b2_conv7x1 = layers.Conv2D(b_c3x3[2], (3,1), padding="same", use_bias=use_bias)
-        self.b2_conv7x1_bn = layers.BatchNormalization(scale=scale)
+        self.b2_conv1x3_act = layers.ReLU()
+        self.b3_conv3x1 = layers.Conv2D(b_c3x3[2], (3,1), padding="same", use_bias=use_bias)
+        self.b3_conv3x1_bn = layers.BatchNormalization(scale=scale)
+        self.b3_conv3x1_act = layers.ReLU()
+        self.mix1 = layers.concatenate()
 
         self.c1_conv3x3red = layers.Conv2D(c_c3x3[0], (1,1), padding="same", use_bias=use_bias)
         self.c1_conv3x3red_bn = layers.BatchNormalization(scale=scale)
+        self.c1_conv3x3red_act = layers.ReLU()
         self.c2_conv3x3 = layers.Conv2D(c_c3x3[1], (3,3), padding="same", use_bias=use_bias)
         self.c2_conv3x3_bn = layers.BatchNormalization(scale=scale)
+        self.c2_conv3x3_act = layers.ReLU()
         self.c3_conv1x3 = layers.Conv2D(c_c3x3[2], (1,3), padding="same", use_bias=use_bias)
         self.c3_conv1x3_bn = layers.BatchNormalization(scale=scale)
+        self.c3_conv1x3_act = layers.ReLU()
         self.c4_conv3x1 = layers.Conv2D(c_c3x3[3], (3,1), padding="same", use_bias=use_bias)
         self.c4_conv3x1_bn = layers.BatchNormalization(scale=scale)
+        self.c4_conv3x1_act = layers.ReLU()
+        self.mix2 = layers.concatenate()
 
-        self.d1_conv1x1 = layers.Conv2D(d_p1x1[0], (1,1), padding="same", use_bias=use_bias)
-        self.d1_conv1x1_bn = layers.BatchNormalization(scale=scale)
+        self.d1_pool = layers.AveragePooling2D((3,3), strides=(1,1), padding='same')
+        self.d2_conv1x1 = layers.Conv2D(d_p1x1[0], (1,1), padding="same", use_bias=use_bias)
+        self.d2_conv1x1_bn = layers.BatchNormalization(scale=scale)
+        self.d2_conv1x1_act = layers.ReLU()
+        self.mix = layers.concatenate()
     
     def call(self, x):
         x1 = self.a1_conv1x1(x)
         x1 = self.a1_conv1x1_bn(x1)
-        x1 = layers.ReLU()(x1)
+        x1 = self.a1_conv1x1_act(x1)
         
         x2 = self.b1_conv3x3red(x)
         x2 = self.b1_conv3x3red_bn(x2)
-        x2 = layers.ReLU()(x2)
+        x2 = self.b1_conv3x3red_act(x2)
         x2_1 = self.b2_conv1x3(x2)
         x2_1 = self.b2_conv1x3_bn(x2_1)
-        x2_1 = layers.ReLU()(x2_1)
-        x2_2 = self.b2_conv7x1(x2)
-        x2_2 = self.b2_conv7x1_bn(x2_2)
-        x2_2 = layers.ReLU()(x2_2)
-        x2 = layers.concatenate([x2_1, x2_2])
+        x2_1 = self.b2_conv1x3_act()(x2_1)
+        x2_2 = self.b3_conv3x1(x2)
+        x2_2 = self.b3_conv3x1_bn(x2_2)
+        x2_2 = self.b3_conv3x1_act()(x2_2)
+        x2 = self.mix1([x2_1, x2_2])
 
         x3 = self.c1_conv3x3red(x)
         x3 = self.c1_conv3x3red_bn(x3)
-        x3 = layers.ReLU()(x3)
+        x3 = self.c1_conv3x3red_act()(x3)
         x3 = self.c2_conv3x3(x3)
         x3 = self.c2_conv3x3_bn(x3)
-        x3 = layers.ReLU()(x3)
+        x3 = self.c2_conv3x3_act()(x3)
         x3_1 = self.c3_conv1x3(x3)
         x3_1 = self.c3_conv1x3_bn(x3_1)
-        x3_1 = layers.ReLU()(x3_1)
+        x3_1 = self.c3_conv1x3_act()(x3_1)
         x3_2 = self.c4_conv3x1(x3)
         x3_2 = self.c4_conv3x1_bn(x3_2)
-        x3_2 = layers.ReLU()(x3_2)
-        x3 = layers.concatenate([x3_1, x3_2])
+        x3_2 = self.c4_conv3x1_act()(x3_2)
+        x3 = self.mix2([x3_1, x3_2])
 
-        x4 = layers.AveragePooling2D((3,3), strides=(1,1), padding='same')(x)
-        x4 = self.d1_conv1x1(x4)
-        x4 = self.d1_conv1x1_bn(x4)
-        x4 = layers.ReLU()(x4)
+        x4 = self.d1_pool(x)
+        x4 = self.d2_conv1x1(x4)
+        x4 = self.d2_conv1x1_bn(x4)
+        x4 = self.d2_conv1x1_act()(x4)
 
-        return layers.Concatenate()([x1,x2,x3,x4])
+        return self.mix([x1,x2,x3,x4])
 
 
 class InceptionV3(KerasModel):
@@ -306,9 +359,11 @@ class InceptionV3(KerasModel):
     def __init__(self,
                  input_shape=(299, 299, 3),
                  classes_num=1000,
+                 debug=-1,
                  **kwargs):
         self.input_shape = input_shape
         self.classes_num = classes_num
+        self.debug = debug
         super().__init__(**kwargs)
       
     def build(self):
@@ -342,27 +397,27 @@ class InceptionV3(KerasModel):
         # 71x71x192
         x = layers.MaxPooling2D((3,3), strides=(2,2), name="pool2")(x)
         # 35x35x192
-        x = InceptionA([64], [48, 64], [64, 96, 96], [32], use_bias=use_bias, scale=scale, name="inception_a1")(x)
+        x = InceptionA([64], [48, 64], [64, 96, 96], [32], use_bias=use_bias, scale=scale, name="inception_a1")(x) if self.debug >= 0 else x
         # 35x35x256
-        x = InceptionA([64], [48, 64], [64, 96, 96], [64], use_bias=use_bias, scale=scale, name="inception_a2")(x)
+        x = InceptionA([64], [48, 64], [64, 96, 96], [64], use_bias=use_bias, scale=scale, name="inception_a2")(x) if self.debug >= 1 else x
         # 35x35x288
-        x = InceptionA([64], [48, 64], [64, 96, 96], [64], use_bias=use_bias, scale=scale, name="inception_a3")(x)
+        x = InceptionA([64], [48, 64], [64, 96, 96], [64], use_bias=use_bias, scale=scale, name="inception_a3")(x) if self.debug >= 2 else x
         # 35x35x288
-        x = InceptionB([384], [64, 96, 96], name="inception_b1")(x)
+        x = InceptionB([384], [64, 96, 96], name="inception_b1")(x) if self.debug >= 3 else x
         # 17x17x768
-        x = InceptionC([192], [128, 128, 192], [128, 128, 128, 128, 192], [192], use_bias=use_bias, scale=scale, name="inception_c1")(x)
+        x = InceptionC([192], [128, 128, 192], [128, 128, 128, 128, 192], [192], use_bias=use_bias, scale=scale, name="inception_c1")(x) if self.debug >= 4 else x
         # 17x17x768
-        x = InceptionC([192], [160, 160, 192], [160, 160, 160, 160, 192], [192], use_bias=use_bias, scale=scale, name="inception_c2")(x)
+        x = InceptionC([192], [160, 160, 192], [160, 160, 160, 160, 192], [192], use_bias=use_bias, scale=scale, name="inception_c2")(x) if self.debug >= 5 else x
         # 17x17x768
-        x = InceptionC([192], [160, 160, 192], [160, 160, 160, 160, 192], [192], use_bias=use_bias, scale=scale, name="inception_c3")(x)
+        x = InceptionC([192], [160, 160, 192], [160, 160, 160, 160, 192], [192], use_bias=use_bias, scale=scale, name="inception_c3")(x) if self.debug >= 6 else x
         # 17x17x768
-        x = InceptionC([192], [192, 192, 192], [192, 192, 192, 192, 192], [192], use_bias=use_bias, scale=scale, name="inception_c4")(x)
+        x = InceptionC([192], [192, 192, 192], [192, 192, 192, 192, 192], [192], use_bias=use_bias, scale=scale, name="inception_c4")(x) if self.debug >= 7 else x
         # 17x17x768
-        x = InceptionD([192, 320], [192, 192, 192, 192], use_bias=use_bias, scale=scale, name="inception_d1")(x)
+        x = InceptionD([192, 320], [192, 192, 192, 192], use_bias=use_bias, scale=scale, name="inception_d1")(x) if self.debug >= 8 else x
         # 8x8x1280
-        x = InceptionE([320], [384, 384, 384], [448, 384, 384, 384], [192], use_bias=use_bias, scale=scale, name="inception_e1")(x)
+        x = InceptionE([320], [384, 384, 384], [448, 384, 384, 384], [192], use_bias=use_bias, scale=scale, name="inception_e1")(x) if self.debug >= 9 else x
         # 8x8x2048
-        x = InceptionE([320], [384, 384, 384], [448, 384, 384, 384], [192], use_bias=use_bias, scale=scale, name="inception_e2")(x)
+        x = InceptionE([320], [384, 384, 384], [448, 384, 384, 384], [192], use_bias=use_bias, scale=scale, name="inception_e2")(x) if self.debug >= 10 else x
         # 8x8x2048
 
         # x = layers.GlobalAveragePooling2D(name="avg_pool")(x)
