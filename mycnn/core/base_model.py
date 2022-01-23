@@ -17,6 +17,9 @@ from ._wrapper import check_filepath, check_state
 
 
 class implement_model:
+    """
+    實例化模型物件 (tf.keras.models API)
+    """
     def __init__(self, method):
         self.method = method
     
@@ -111,7 +114,7 @@ class KerasModel(object):
     def setup_model(self, inputs, outputs, **kwargs) -> tuple:
         """
         實例化(instance)神經網路模型
-        類似於 Keras Functional Model API 的用法
+        類似於 tf.keras.models.Model 的用法
 
         Arguments
         inputs:  輸入張量 or 輸入張量列表 (list)，使用 Keras Input API
@@ -159,21 +162,50 @@ class KerasModel(object):
         self.__cbks_list.append(cbk)
 
     @check_state("built", "training")
-    def add_callbacks(self, cbks):
+    def add_callbacks(self, cbks: list):
         if not isinstance(cbks, list):
             raise Exception("[Error] Please check your callbacks is `list`.")
         self.__cbks_list += cbks
 
     @check_state("built")
     def setup_training(self,
-                       logdir,
-                       epochs,
-                       batch_size,
+                       logdir: str,
+                       epochs: int,
+                       batch_size: int,
                        optimizer,
                        loss,
                        metrics=[],
                        best_val=np.inf,
-                       **kwargs):        
+                       **kwargs):
+        """
+        配置訓練用參數
+        設定訓練時所產生檔案的保存路徑
+        尋找最佳權重
+        自動從終止的地方開始訓練
+        啟用訓練功能
+
+        Arguments
+        logdir:     紀錄訓練時的各種資料
+        epochs:     訓練週期
+        batch_size: 批次大小 (僅使用 NumPy Array 時有效)
+        optimizer:  訓練權重優化器
+        loss:       損失函數
+        metrics:    評估函數
+        best_val:   最佳 loss 數值 (未來會移除，直接改成自動讀取)
+
+        Keras API 相關
+        tf.keras.callbacks
+            ModelCheckpoint: 來記錄權重檔
+            CSVLogger:       訓練變化過程的紀錄檔
+        
+        tf.keras.models.Model
+            load_weights:    載入權重，這裡用來載入最後終止的權重
+            compile:         設定訓練用參數，如優化器、損失函數、評估函數
+            summary:         印出模型結構，並存成文字檔並歸檔至 logdir 底下
+
+        tensorflow.keras.utils
+            plot_model:      繪製模型結構，並存成圖檔並歸檔至 logdir 底下
+        """
         self.setup_logfile(logdir)
 
         ckpts_filename = "weights.{epoch:05d}-{val_loss:.7f}.h5"
@@ -222,7 +254,16 @@ class KerasModel(object):
     @check_state("built", "training")
     def train(self, tra_x, tra_y, val_x, val_y, last_checkpoint=""):
         """
-        使用 tf.keras.Model 原 fit 方法
+        使用 tf.keras.Model 原 fit 方法 (搭配 NumPy Array)
+
+        Arguments
+        tra_x, tra_y, val_x, val_y 使用 NumPy Array 進行模型訓練
+        last_checkpoint: 載入權重路徑，直接替換掉當前權重 (例如直接設定先前最佳權重或是進行轉移學習)
+
+        Keras API 相關        
+        tf.keras.models.Model
+            load_weights:    載入權重，這裡用來載入指定路徑的權重
+            fit:             傳遞 setup_training 所設定的參數並開始模型訓練
         """
         if osp.exists(last_checkpoint):
             print(f"[Info] Loading pre-weights from {last_checkpoint}")
@@ -240,7 +281,16 @@ class KerasModel(object):
     @check_state("built", "training")
     def train_dataset(self, tra_dataset, val_dataset, last_checkpoint=""):
         """
-        使用 tf.keras.Model 原 fit 方法
+        使用 tf.keras.Model 原 fit 方法 (搭配 tf.data.Dataset)
+
+        Arguments
+        tra_dataset, val_dataset 使用 tf.data.Dataset 物件進行模型訓練
+        last_checkpoint: 載入權重路徑，直接替換掉當前權重 (例如直接設定先前最佳權重或是進行轉移學習)
+
+        Keras API 相關        
+        tf.keras.models.Model
+            load_weights:    載入權重，這裡用來載入指定路徑的權重
+            fit:             傳遞 setup_training 所設定的參數並開始模型訓練
         """
         if osp.exists(last_checkpoint):
             print(f"[Info] Loading pre-weights from {last_checkpoint}")
@@ -288,13 +338,14 @@ class KerasModel(object):
     @check_filepath(mode="save", exts=[".h5", ".h5df"])
     @check_state("built")
     def save_weights(self, filepath: str):
-        print(f"Save weights to {filepath}")
+        print(f"[Info] Save weights to {filepath}")
         self.__M.save_weights(filepath)
         
     @check_filepath(mode="load", exts=[".h5", ".h5df"])
     @check_state("built")
-    def load_weights(self, filepath: str):
-        self.__M.load_weights(filepath)
+    def load_weights(self, filepath: str, by_name: bool=False):
+        print(f"[Info] Load weights from {filepath}")
+        self.__M.load_weights(filepath, by_name=by_name)
         return self
         
     @check_state("built")
@@ -324,7 +375,7 @@ class KerasModel(object):
         只有當呼叫不存在於 KerasModel 的屬性/方法時，才會呼叫此方法
         """
         if name.find("_") != 0:
-            print(f"\nUse `tf.keras.Model` method {name}\n")
+            print(f"\n[Info] Use `tf.keras.Model` method {name}\n")
         return getattr(self.__M, name)
 
     def show_history(self, metrics: list=['loss'], start=0, end=None):
@@ -346,7 +397,9 @@ class KerasModel(object):
             raise NotADirectoryError(f"[Error] No such directory: {self.ckpts_dir} "
                                      "Please first by calling `setup_logfile()`")
         ckpts = find_all_ckpts(self.ckpts_dir)
-        find_best_ckpt(ckpts)
+        best_ckpt = find_best_ckpt(ckpts)
+        filepath = osp.join(self.ckpts_dir, best_ckpt)
+        self.__M.load_weights(filepath)
         return self
 
     @property
