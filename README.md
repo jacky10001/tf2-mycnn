@@ -52,8 +52,8 @@
 
 ### Segmentation
 
-- [ ] FCN
-- [ ] UNet
+- [x] FCN (範例尚未準備)
+- [ ] U-Net
 
 ### Object Detection
 
