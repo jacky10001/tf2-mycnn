@@ -352,7 +352,7 @@ class InceptionV3(KerasModel):
     Inception V3
     參考 Keras 及 PyTorch 的 Inception V3 API
 
-    論文提到使用了三種 Inception Module，每個
+    論文提到使用了三種 Inception Module，每種又實現不同 Inception Block，論文稱其為 Network in Network
 
     Note:
     論文有提到輔助分類器，這邊暫時不使用，因為訓練初期並不會有太大影響
@@ -422,9 +422,9 @@ class InceptionV3(KerasModel):
         x = InceptionE([320], [384, 384, 384], [448, 384, 384, 384], [192], use_bias=use_bias, scale=scale, name="inception_e2")(x) if self.debug >= 10 else x
         # 8x8x2048
 
-        # x = layers.GlobalAveragePooling2D(name="avg_pool")(x)
-        # x = layers.Dropout(0.4)(x)
-        # x = layers.Dense(self.classes_num, activation="linear", name="linear")(x)
-        # x_out = layers.Dense(self.classes_num, activation="softmax", name="softmax")(x)
+        x = layers.GlobalAveragePooling2D(name="avg_pool")(x)
+        x = layers.Dropout(0.4)(x)
+        x = layers.Dense(self.classes_num, activation="linear", name="linear")(x)
+        x_out = layers.Dense(self.classes_num, activation="softmax", name="softmax")(x)
         
-        self.setup_model(x_in, x, name="InceptionV3")
+        self.setup_model(x_in, x_out, name="InceptionV3")
