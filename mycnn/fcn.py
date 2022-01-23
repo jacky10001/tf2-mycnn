@@ -3,11 +3,16 @@
 
 分成兩種版本
 - 使用 Keras Layers API 自行建構 VGG16 骨幹網路
-- 使用 Keras Applications API，並載入 Pre-training Weights
+- 使用 Keras Applications VGG16 API
+  建構 VGG16 骨幹網路並載入 Pre-training Weights
 
 Refer:
 - [Fully Convolutional Networks for Semantic Segmentation]
   (https://arxiv.org/abs/1411.4038) (CVPR 2015, IEEE/CVF)
+- [Very Deep Convolutional Networks for Large-Scale Image Recognition]
+  (https://arxiv.org/abs/1409.1556) (ICLR 2015)
+- [kevinddchen/Keras-FCN]
+  (https://github.com/kevinddchen/Keras-FCN)
 """
 
 import tensorflow as tf

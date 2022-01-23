@@ -9,10 +9,8 @@
 Refer:
 - [Very Deep Convolutional Networks for Large-Scale Image Recognition]
   (https://arxiv.org/abs/1409.1556) (ICLR 2015)
-
 - [Keras API reference / Keras Applications / VGG16 and VGG19]
   (https://github.com/keras-team/keras/blob/master/keras/applications/vgg19.py)
-
 - [vgg-nets | PyTorch]
   (https://pytorch.org/hub/pytorch_vision_vgg/)
 """

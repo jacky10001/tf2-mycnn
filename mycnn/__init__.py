@@ -24,5 +24,5 @@ from .fcn import FCN32_KERAS
 from .fcn import FCN16_KERAS
 from .fcn import FCN8_KERAS
 
-__version__ = "v0.22.01.23"
+__version__ = "v0.22.01.24"
 __maintainer__ = "Jacky"

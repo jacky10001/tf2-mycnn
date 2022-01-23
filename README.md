@@ -49,21 +49,26 @@
 - [x] GoogLeNet (Inception v1)
 - [x] Inception V3
 - [x] ResNet18, ResNet50, ResNet101
+- [ ] 資料擴增
 
 ### Segmentation
 
 - [x] FCN (範例尚未準備)
 - [ ] U-Net
+- [ ] 分割資料讀取並訓練
+- [ ] 分割資料擴增
 
 ### Object Detection
 
 - [ ] SSD300
 - [ ] RPN
 - [ ] RCNN
+- [ ] VOC資料讀取並訓練
+- [ ] COCO資料讀取並訓練
 
 ### Others
 
-- [ ] 解釋被我裝進 `KerasModel` 的 Keras API
+- [ ] 利用註解來解釋被我裝進 `KerasModel` 的 Keras API
 - [ ] 環境建置說明，我使用的版本號
 - [ ] 程式範例說明 (目前有加一些了)
 - [ ] 相關文獻整理
