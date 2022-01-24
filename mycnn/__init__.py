@@ -17,12 +17,14 @@ from .resnet import ResNet101
 from .googlenet import GoogleNet
 from .inception_v3 import InceptionV3
 
+# segmentation
 from .fcn import FCN32
 from .fcn import FCN16
 from .fcn import FCN8
 from .fcn import FCN32_KERAS
 from .fcn import FCN16_KERAS
 from .fcn import FCN8_KERAS
+from .unet import UNet
 
 __version__ = "v0.22.01.24"
 __maintainer__ = "Jacky"
