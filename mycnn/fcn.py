@@ -135,7 +135,6 @@ class FCN32(KerasModel):
     def build(self):
         # Common parameter for layer
         block_name = "fcn32"
-        filters = self.classes_num
         padding = "same"
         kernel_initializer = "he_normal"
 
@@ -143,9 +142,9 @@ class FCN32(KerasModel):
 
         _, _, x = my_vgg16(x_in)
         
-        x = layers.Conv2D(filters, (1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
-        x = layers.Conv2DTranspose(filters, (32, 32), strides=(32, 32), padding="valid", use_bias=False, name=block_name+"_conv1t")(x)
-        x = layers.Reshape((-1, filters))(x)
+        x = layers.Conv2D(self.classes_num, (1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
+        x = layers.Conv2DTranspose(self.classes_num, (32, 32), strides=(32, 32), padding="valid", use_bias=False, name=block_name+"_conv1t")(x)
+        x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
         self.setup_model(x_in, x_out, name="FCN32")
@@ -164,7 +163,6 @@ class FCN16(KerasModel):
     def build(self):
         # Common parameter for layer
         block_name = "fcn16"
-        filters = self.classes_num
         padding = "same"
         kernel_initializer = "he_normal"
         
@@ -172,15 +170,15 @@ class FCN16(KerasModel):
 
         pool3, pool4, x = my_vgg16(x_in)
 
-        pool4 = layers.Conv2D(filters, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool4')(pool4)
-        x = layers.Conv2D(filters, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
-        x = layers.Conv2DTranspose(filters, (2,2), strides=(2,2), padding="valid", use_bias=False, name=block_name+"_conv1t")(x)
+        pool4 = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool4')(pool4)
+        x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
+        x = layers.Conv2DTranspose(self.classes_num, (2,2), strides=(2,2), padding="valid", use_bias=False, name=block_name+"_conv1t")(x)
         x = layers.Add(name=block_name+"_up_x2")([x, pool4])
 
-        pool3 = layers.Conv2D(filters, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool3')(pool3)
-        x = layers.Conv2D(filters, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv2')(x)
-        x = layers.Conv2DTranspose(filters, (16,16), strides=(16,16), padding="valid", use_bias=False, name=block_name+"_conv2t")(x)
-        x = layers.Reshape((-1, filters))(x)
+        pool3 = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool3')(pool3)
+        x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv2')(x)
+        x = layers.Conv2DTranspose(self.classes_num, (16,16), strides=(16,16), padding="valid", use_bias=False, name=block_name+"_conv2t")(x)
+        x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
         self.setup_model(x_in, x_out, name="FCN16")
@@ -199,7 +197,6 @@ class FCN8(KerasModel):
     def build(self):
         # Common parameter for layer
         block_name = "fcn8"
-        filters = self.classes_num
         padding = "same"
         kernel_initializer = "he_normal"
 
@@ -207,19 +204,19 @@ class FCN8(KerasModel):
 
         pool3, pool4, x = my_vgg16(x_in)
 
-        pool4 = layers.Conv2D(filters, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool4')(pool4)
-        x = layers.Conv2D(filters, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
-        x = layers.Conv2DTranspose(filters, (2,2), strides=(2,2), padding="valid", use_bias=False, name=block_name+"_conv1t")(x)
+        pool4 = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool4')(pool4)
+        x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
+        x = layers.Conv2DTranspose(self.classes_num, (2,2), strides=(2,2), padding="valid", use_bias=False, name=block_name+"_conv1t")(x)
         x = layers.Add(name=block_name+"_up_x2")([x, pool4])
 
-        pool3 = layers.Conv2D(filters, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool3')(pool3)
-        x = layers.Conv2D(filters, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv2')(x)
-        x = layers.Conv2DTranspose(filters, (2,2), strides=(2,2), padding="valid", use_bias=False, name=block_name+"_conv2t")(x)
+        pool3 = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool3')(pool3)
+        x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv2')(x)
+        x = layers.Conv2DTranspose(self.classes_num, (2,2), strides=(2,2), padding="valid", use_bias=False, name=block_name+"_conv2t")(x)
         x = layers.Add(name=block_name+"_up_x4")([x, pool3])
         
-        x = layers.Conv2D(filters, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv3')(x)
-        x = layers.Conv2DTranspose(filters, (8,8), strides=(8,8), padding="valid", use_bias=False, name=block_name+"_conv3t")(x)
-        x = layers.Reshape((-1, filters))(x)
+        x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv3')(x)
+        x = layers.Conv2DTranspose(self.classes_num, (8,8), strides=(8,8), padding="valid", use_bias=False, name=block_name+"_conv3t")(x)
+        x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
         self.setup_model(x_in, x_out, name="FCN8")
@@ -260,10 +257,9 @@ class FCN32_KERAS(KerasModel):
         
         # fcn
         block_name = "fcn32"
-        filters = self.classes_num
-        x = layers.Conv2D(filters, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
-        x = layers.Conv2DTranspose(filters, (32, 32), strides=(32, 32), padding="valid", use_bias=False, name=block_name+"_conv1t")(x)
-        x = layers.Reshape((-1, filters))(x)
+        x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
+        x = layers.Conv2DTranspose(self.classes_num, (32, 32), strides=(32, 32), padding="valid", use_bias=False, name=block_name+"_conv1t")(x)
+        x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
         self.setup_model(x_in, x_out, name="FCN32")
@@ -304,19 +300,17 @@ class FCN16_KERAS(KerasModel):
         
         # fcn
         block_name = "fcn16"
-        filters = self.classes_num
-
         pool4 = backbone.get_layer("block4_pool").output
-        pool4 = layers.Conv2D(filters, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool4')(pool4)
-        x = layers.Conv2D(filters, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
-        x = layers.Conv2DTranspose(filters, (2,2), strides=(2,2), padding="valid", use_bias=False, name=block_name+"_conv1t")(x)
+        pool4 = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool4')(pool4)
+        x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
+        x = layers.Conv2DTranspose(self.classes_num, (2,2), strides=(2,2), padding="valid", use_bias=False, name=block_name+"_conv1t")(x)
         x = layers.Add(name=block_name+"_up_x2")([x, pool4])
 
         pool3 = backbone.get_layer("block3_pool").output
-        pool3 = layers.Conv2D(filters, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool3')(pool3)
-        x = layers.Conv2D(filters, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv2')(x)
-        x = layers.Conv2DTranspose(filters, (16,16), strides=(16,16), padding="valid", use_bias=False, name=block_name+"_conv2t")(x)
-        x = layers.Reshape((-1, filters))(x)
+        pool3 = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool3')(pool3)
+        x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv2')(x)
+        x = layers.Conv2DTranspose(self.classes_num, (16,16), strides=(16,16), padding="valid", use_bias=False, name=block_name+"_conv2t")(x)
+        x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
         self.setup_model(x_in, x_out, name="FCN16")
@@ -357,23 +351,21 @@ class FCN8_KERAS(KerasModel):
         
         # fcn
         block_name = "fcn8"
-        filters = self.classes_num
-
         pool4 = backbone.get_layer("block4_pool").output
-        pool4 = layers.Conv2D(filters, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool4')(pool4)
-        x = layers.Conv2D(filters, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
-        x = layers.Conv2DTranspose(filters, (2,2), strides=(2,2), padding="valid", use_bias=False, name=block_name+"_conv1t")(x)
+        pool4 = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool4')(pool4)
+        x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
+        x = layers.Conv2DTranspose(self.classes_num, (2,2), strides=(2,2), padding="valid", use_bias=False, name=block_name+"_conv1t")(x)
         x = layers.Add(name=block_name+"_up_x2")([x, pool4])
 
         pool3 = backbone.get_layer("block3_pool").output
-        pool3 = layers.Conv2D(filters, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool3')(pool3)
-        x = layers.Conv2D(filters, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv2')(x)
-        x = layers.Conv2DTranspose(filters, (2,2), strides=(2,2), padding="valid", use_bias=False, name=block_name+"_conv2t")(x)
+        pool3 = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool3')(pool3)
+        x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv2')(x)
+        x = layers.Conv2DTranspose(self.classes_num, (2,2), strides=(2,2), padding="valid", use_bias=False, name=block_name+"_conv2t")(x)
         x = layers.Add(name=block_name+"_up_x4")([x, pool3])
         
-        x = layers.Conv2D(filters, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv3')(x)
-        x = layers.Conv2DTranspose(filters, (8,8), strides=(8,8), padding="valid", use_bias=False, name=block_name+"_conv3t")(x)
-        x = layers.Reshape((-1, filters))(x)
+        x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv3')(x)
+        x = layers.Conv2DTranspose(self.classes_num, (8,8), strides=(8,8), padding="valid", use_bias=False, name=block_name+"_conv3t")(x)
+        x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
         self.setup_model(x_in, x_out, name="FCN8")
