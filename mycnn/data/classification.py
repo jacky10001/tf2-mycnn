@@ -11,6 +11,9 @@ from natsort import natsorted
 import tensorflow as tf
 
 
+ALLOWLIST_FORMATS = ('.bmp', '.gif', '.jpeg', '.jpg', '.png')
+
+
 def flip_h(x):
     x = tf.image.random_flip_left_right(x)
     return x
@@ -65,8 +68,22 @@ def zoom_scale(x, scale_minval=0.5, scale_maxval=1.5):
 
 
 def parse_fn(directory, gray=False, **kwargs):
-    filepaths = glob.glob(os.path.join(directory,"*","*"))
-    filepaths = natsorted(filepaths)
+    filepaths = []
+    labels = []
+    
+    # inferred_class_names = []
+    # for subdir in sorted(os.listdir(directory)):
+    #     if os.path.isdir(os.path.join(directory, subdir)):
+    #         inferred_class_names.append(subdir)
+    # class_indices = dict(zip(class_names, range(len(class_names))))
+
+    walk = os.walk(directory)
+    for root, _, files in natsorted(walk, key=lambda x: x[0]):
+        for fname in natsorted(files):
+            if fname.lower().endswith(ALLOWLIST_FORMATS):
+                filepath = os.path.join(root, fname)
+                filepaths.append(filepath)
+    
     def wraper(x, y):
         if gray:
             x = tf.image.rgb_to_grayscale(x)
