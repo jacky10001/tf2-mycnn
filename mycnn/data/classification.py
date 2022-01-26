@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 """
-基於 TensorFlow API 的資料擴增
-需搭配 tf.data.Dataset map 函式
+基於 tf.data.Dataset API 的資料擴增
+這裡我將以前有用 TensorFlow 寫過的影像處理相關函式整理起來
+並參考 Keras 官方的預處理函式 image_dataset_from_directory
+然後重新實現新的函式 generate_classification_dataset
 """
 
 import os
@@ -67,7 +69,13 @@ def zoom_scale(x, scale_minval=0.5, scale_maxval=1.5):
     return x
 
 
-def parse_fn(directory, batch_size=32, gray=False, shuffle=False, **kwargs):
+def generate_classification_dataset(directory,
+                                    batch_size=32,
+                                    image_size=(256, 256),
+                                    gray=False,
+                                    shuffle=False,
+                                    validation_split=None,
+                                    **kwargs):
     class_names = []
     file_paths = []
     labels = []
@@ -76,7 +84,8 @@ def parse_fn(directory, batch_size=32, gray=False, shuffle=False, **kwargs):
         if os.path.isdir(os.path.join(directory, subdir)):
             class_names.append(subdir)
     class_indices = dict(zip(class_names, range(len(class_names))))
-    if class_names:
+    print(f"Class indices:\n{class_indices}\n")
+    if not class_names:
         raise ValueError("No subdirs found.")
 
     walk = os.walk(directory)
@@ -86,27 +95,26 @@ def parse_fn(directory, batch_size=32, gray=False, shuffle=False, **kwargs):
                 filepath = os.path.join(root, fname)
                 file_paths.append(filepath)
                 labels.append(class_indices[os.path.basename(root)])
-    if file_paths:
+    if not file_paths:
         raise ValueError("No images found.")
 
     print(f'Found {len(file_paths)} files belonging to {len(class_names)} classes.')
 
     def load_img(x):
         x = tf.io.read_file(x)
-        x = tf.io.decode_image(x, channels=3, expand_animations=False)
-        if gray:
-            x = tf.image.rgb_to_grayscale(x)
+        num_channels = 1 if gray else 3
+        x = tf.io.decode_image(x, channels=num_channels, expand_animations=False)
+        x = tf.image.resize(x, image_size)
         x = tf.cast(x, tf.float32) / 255.0
         
         if len(x.shape) == 2:
-            print("\nGray image, add one channel!!!")
+            print("Gray image, add one channel!!!", end=" - ")
             x = tf.expand_dims(x, axis=-1)
         else:
             if x.shape[-1] == 3:
-                print("\nRGB image")
+                print("RGB image", end=" - ")
             elif  x.shape[-1] == 1:
-                print("\nGray image")
-        print(x.shape)
+                print("Gray image", end=" - ")
         
         if kwargs:
             print("Data Augmentation!!!")
@@ -123,21 +131,54 @@ def parse_fn(directory, batch_size=32, gray=False, shuffle=False, **kwargs):
         return x
 
     def load_lbl(y):
-        y = tf.one_hot(y, 10)
+        y = tf.one_hot(y, len(class_names))
         return y
     
-    path_ds = tf.data.Dataset.from_tensor_slices(file_paths)
-    img_ds = path_ds.map(load_img)
+    if not validation_split:
+        path_ds = tf.data.Dataset.from_tensor_slices(file_paths)
+        img_ds = path_ds.map(load_img)
 
-    lbl_ds = tf.data.Dataset.from_tensor_slices(labels)
-    lbl_ds = lbl_ds.map(load_lbl)
+        lbl_ds = tf.data.Dataset.from_tensor_slices(labels)
+        lbl_ds = lbl_ds.map(load_lbl)
 
-    dataset = tf.data.Dataset.zip((img_ds, lbl_ds))
-    if shuffle:
-        dataset = dataset.shuffle(buffer_size=batch_size * 8, seed=100)
-    dataset = dataset.batch(batch_size)
+        dataset = tf.data.Dataset.zip((img_ds, lbl_ds))
+        if shuffle:
+            print("Shuffle Data!!!")
+            dataset = dataset.shuffle(buffer_size=batch_size * 8, seed=100)
+        dataset = dataset.batch(batch_size)
 
-    dataset.class_names = class_names
-    dataset.file_paths = file_paths
+        dataset.class_names = class_names
+        dataset.file_paths = file_paths
 
-    return dataset
+        return dataset
+    else:
+        num_val_samples = int(len(file_paths) * validation_split)
+        
+        print('Using %d files for training.' % (len(file_paths) - num_val_samples))
+        print('Using %d files for validation.' % (num_val_samples))
+
+        tra_path_ds = tf.data.Dataset.from_tensor_slices(file_paths[:num_val_samples])
+        val_path_ds = tf.data.Dataset.from_tensor_slices(file_paths[num_val_samples:])
+        tra_img_ds = tra_path_ds.map(load_img)
+        val_img_ds = val_path_ds.map(load_img)
+
+        tra_lbl_ds = tf.data.Dataset.from_tensor_slices(labels[:num_val_samples])
+        val_lbl_ds = tf.data.Dataset.from_tensor_slices(labels[num_val_samples:])
+        tra_lbl_ds = tra_lbl_ds.map(load_lbl)
+        val_lbl_ds = val_lbl_ds.map(load_lbl)
+
+        tra_dataset = tf.data.Dataset.zip((tra_img_ds, tra_lbl_ds))
+        val_dataset = tf.data.Dataset.zip((val_img_ds, val_lbl_ds))
+        if shuffle:
+            print("Shuffle Data!!!")
+            tra_dataset = tra_dataset.shuffle(buffer_size=batch_size * 8, seed=100)
+            val_dataset = val_dataset.shuffle(buffer_size=batch_size * 8, seed=100)
+        tra_dataset = tra_dataset.batch(batch_size)
+        val_dataset = val_dataset.batch(batch_size)
+
+        tra_dataset.class_names = class_names
+        val_dataset.class_names = class_names
+        tra_dataset.file_paths = file_paths[:num_val_samples]
+        val_dataset.file_paths = file_paths[num_val_samples:]
+
+        return tra_dataset, val_dataset
