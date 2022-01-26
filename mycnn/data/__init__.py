@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from .classification import parse_fn
+from .classification import generate_classification_dataset
 
 __all__ = [
-    'parse_fn'
+    'generate_classification_dataset'
 ]

@@ -49,12 +49,12 @@
 - [x] GoogLeNet (Inception v1)
 - [x] Inception V3
 - [x] ResNet18, ResNet50, ResNet101
-- [ ] 資料擴增
+- [x] 資料擴增 <font color="red">(尚未驗證)</font>
 
 ### Segmentation
 
-- [x] FCN (範例尚未準備)
-- [x] U-Net (範例尚未準備)
+- [x] FCN <font color="red">(範例尚未準備)</font>)
+- [x] U-Net <font color="red">(範例尚未準備)</font>
 - [ ] 分割資料讀取並訓練
 - [ ] 分割資料擴增
 
