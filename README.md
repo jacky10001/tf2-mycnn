@@ -49,12 +49,13 @@
 - [x] GoogLeNet (Inception v1)
 - [x] Inception V3
 - [x] ResNet18, ResNet50, ResNet101
-- [x] 資料擴增 <font color="red">(尚未驗證)</font>
+- [x] 資料擴增函式 generate_classification_dataset
+- [ ] 測試我的擴增函式對於模型是否有正向影響
 
 ### Segmentation
 
-- [x] FCN <font color="red">(範例尚未準備)</font>)
-- [x] U-Net <font color="red">(範例尚未準備)</font>
+- [x] FCN (範例尚未準備)
+- [x] U-Net (範例尚未準備)
 - [ ] 分割資料讀取並訓練
 - [ ] 分割資料擴增
 

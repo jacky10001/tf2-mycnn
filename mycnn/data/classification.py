@@ -9,11 +9,12 @@
 
 import os
 import glob
+import numpy as np
 from natsort import natsorted
 import tensorflow as tf
 
 
-ALLOWLIST_FORMATS = ('.bmp', '.gif', '.jpeg', '.jpg', '.png')
+ALLOWLIST_FORMATS = (".bmp", ".gif", ".jpeg", ".jpg", ".png")
 
 
 def flip_h(x):
@@ -73,7 +74,9 @@ def generate_classification_dataset(directory,
                                     batch_size=32,
                                     image_size=(256, 256),
                                     gray=False,
-                                    shuffle=False,
+                                    shuffle_filepath=False,
+                                    shuffle_dataset=False,
+                                    seed=100,
                                     validation_split=None,
                                     **kwargs):
     class_names = []
@@ -99,6 +102,13 @@ def generate_classification_dataset(directory,
         raise ValueError("No images found.")
 
     print(f'Found {len(file_paths)} files belonging to {len(class_names)} classes.')
+
+    
+    if shuffle_filepath:
+        rng = np.random.RandomState(seed)
+        rng.shuffle(file_paths)
+        rng = np.random.RandomState(seed)
+        rng.shuffle(labels)
 
     def load_img(x):
         x = tf.io.read_file(x)
@@ -142,8 +152,8 @@ def generate_classification_dataset(directory,
         lbl_ds = lbl_ds.map(load_lbl)
 
         dataset = tf.data.Dataset.zip((img_ds, lbl_ds))
-        if shuffle:
-            print("Shuffle Data!!!")
+        if shuffle_dataset:
+            print("Shuffle Dataset!!!")
             dataset = dataset.shuffle(buffer_size=batch_size * 8, seed=100)
         dataset = dataset.batch(batch_size)
 
@@ -152,10 +162,10 @@ def generate_classification_dataset(directory,
 
         return dataset
     else:
-        num_val_samples = int(len(file_paths) * validation_split)
+        num_val_samples = int(len(file_paths)*validation_split)
         
-        print('Using %d files for training.' % (len(file_paths) - num_val_samples))
-        print('Using %d files for validation.' % (num_val_samples))
+        print("Using %d files for training."%(len(file_paths) - num_val_samples))
+        print("Using %d files for validation."%(num_val_samples))
 
         tra_path_ds = tf.data.Dataset.from_tensor_slices(file_paths[:num_val_samples])
         val_path_ds = tf.data.Dataset.from_tensor_slices(file_paths[num_val_samples:])
@@ -169,10 +179,10 @@ def generate_classification_dataset(directory,
 
         tra_dataset = tf.data.Dataset.zip((tra_img_ds, tra_lbl_ds))
         val_dataset = tf.data.Dataset.zip((val_img_ds, val_lbl_ds))
-        if shuffle:
-            print("Shuffle Data!!!")
-            tra_dataset = tra_dataset.shuffle(buffer_size=batch_size * 8, seed=100)
-            val_dataset = val_dataset.shuffle(buffer_size=batch_size * 8, seed=100)
+        if shuffle_dataset:
+            print("Shuffle Dataset!!!")
+            tra_dataset = tra_dataset.shuffle(buffer_size=batch_size * 8, seed=seed)
+            val_dataset = val_dataset.shuffle(buffer_size=batch_size * 8, seed=seed)
         tra_dataset = tra_dataset.batch(batch_size)
         val_dataset = val_dataset.batch(batch_size)
 
