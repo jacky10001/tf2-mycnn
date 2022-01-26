@@ -67,24 +67,33 @@ def zoom_scale(x, scale_minval=0.5, scale_maxval=1.5):
     return x
 
 
-def parse_fn(directory, gray=False, **kwargs):
-    filepaths = []
+def parse_fn(directory, batch_size=32, gray=False, shuffle=False, **kwargs):
+    class_names = []
+    file_paths = []
     labels = []
-    
-    # inferred_class_names = []
-    # for subdir in sorted(os.listdir(directory)):
-    #     if os.path.isdir(os.path.join(directory, subdir)):
-    #         inferred_class_names.append(subdir)
-    # class_indices = dict(zip(class_names, range(len(class_names))))
+
+    for subdir in sorted(os.listdir(directory)):
+        if os.path.isdir(os.path.join(directory, subdir)):
+            class_names.append(subdir)
+    class_indices = dict(zip(class_names, range(len(class_names))))
+    if class_names:
+        raise ValueError("No subdirs found.")
 
     walk = os.walk(directory)
     for root, _, files in natsorted(walk, key=lambda x: x[0]):
         for fname in natsorted(files):
             if fname.lower().endswith(ALLOWLIST_FORMATS):
                 filepath = os.path.join(root, fname)
-                filepaths.append(filepath)
-    
-    def wraper(x, y):
+                file_paths.append(filepath)
+                labels.append(class_indices[os.path.basename(root)])
+    if file_paths:
+        raise ValueError("No images found.")
+
+    print(f'Found {len(file_paths)} files belonging to {len(class_names)} classes.')
+
+    def load_img(x):
+        x = tf.io.read_file(x)
+        x = tf.io.decode_image(x, channels=3, expand_animations=False)
         if gray:
             x = tf.image.rgb_to_grayscale(x)
         x = tf.cast(x, tf.float32) / 255.0
@@ -111,6 +120,24 @@ def parse_fn(directory, gray=False, **kwargs):
         else:
             print("Not Data Augmentation!!!")
             
+        return x
+
+    def load_lbl(y):
         y = tf.one_hot(y, 10)
-        return x, y
-    return wraper
+        return y
+    
+    path_ds = tf.data.Dataset.from_tensor_slices(file_paths)
+    img_ds = path_ds.map(load_img)
+
+    lbl_ds = tf.data.Dataset.from_tensor_slices(labels)
+    lbl_ds = lbl_ds.map(load_lbl)
+
+    dataset = tf.data.Dataset.zip((img_ds, lbl_ds))
+    if shuffle:
+        dataset = dataset.shuffle(buffer_size=batch_size * 8, seed=100)
+    dataset = dataset.batch(batch_size)
+
+    dataset.class_names = class_names
+    dataset.file_paths = file_paths
+
+    return dataset
