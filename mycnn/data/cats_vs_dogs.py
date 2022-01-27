@@ -14,6 +14,9 @@ def cats_vs_dogs_from_MSCenter(dataset_path):
     labeldirs = ["Cats", "Dogs"]
     flag = False
 
+    if not os.path.exists(main_folder):
+        os.makedirs(main_folder, exist_ok=True)
+
     # 從 MS Center 下載資料集
     if not os.path.exists(original_zip_file):
         url = "https://download.microsoft.com/download/3/E/1/3E1C3F21-ECDB-4869-8368-6DEBA77B919F/kagglecatsanddogs_3367a.zip"
