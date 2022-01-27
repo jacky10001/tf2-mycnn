@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-import  shutil
+import shutil
 import zipfile
 import requests
 
@@ -10,12 +10,11 @@ def cats_vs_dogs_from_MSCenter(dataset_path):
     main_folder = os.path.join(dataset_path, "DogsVsCats")
     temp_folder = os.path.join(main_folder, ".~temp")
     train_folder = os.path.join(main_folder, "train")
-    original_zip_file = os.path.join(temp_folder, "dogs-vs-cats.zip")
+    original_zip_file = os.path.join(main_folder, "dogs-vs-cats.zip")
     labeldirs = ["Cats", "Dogs"]
     flag = False
 
-    os.makedirs(temp_folder, exist_ok=True)
-
+    # 從 MS Center 下載資料集
     if not os.path.exists(original_zip_file):
         url = "https://download.microsoft.com/download/3/E/1/3E1C3F21-ECDB-4869-8368-6DEBA77B919F/kagglecatsanddogs_3367a.zip"
         r = requests.get(url, allow_redirects=True)
@@ -23,42 +22,59 @@ def cats_vs_dogs_from_MSCenter(dataset_path):
     else:
         print("Already download zip file.")
 
-    # for labldir in labeldirs:
-    #     check_path = os.path.join(train_folder, labldir)
-    #     if os.path.exists(check_path):
-    #         if not os.listdir(check_path) or len(os.listdir(check_path)) != 12500:
-    #             raise ValueError(f"Detect incomplete data in {check_path}. "
-    #                             "Please delete all data and unzip again.")
-    #         flag = False
-    #     else:
-    #         flag = True
+    for labldir in labeldirs:
+        check_path = os.path.join(train_folder, labldir)
+        if os.path.exists(check_path):
+            if not os.listdir(check_path) or len(os.listdir(check_path)) != 12500:
+                raise ValueError(f"Detect incomplete data in {check_path}. "
+                                "Please delete all data and unzip again.")
+            flag = False
+        else:
+            flag = True
 
-    # if flag:
-    #     print("Beginning make dataset.")
+    if flag:
+        print("Beginning make dataset.")
 
-    #     # 解壓縮檔案至暫存資料夾
-    #     with zipfile.ZipFile(original_zip_file, 'r') as zip_ref:
-    #         print(f"Unzipping {original_zip_file} ...")
-    #         os.makedirs(temp_folder, exist_ok=True)
-    #         zip_ref.extractall(temp_folder)
+        # 解壓縮檔案至暫存資料夾
+        with zipfile.ZipFile(original_zip_file, 'r') as zip_ref:
+            print(f"Unzipping {original_zip_file} ...")
+            os.makedirs(temp_folder, exist_ok=True)
+            zip_ref.extractall(temp_folder)
 
-    #     # 檢查路徑下是否建立資料夾類別
-    #     # 如果尚未建立則會自動搬移資料
-    #     # 若成功偵測到資料夾類別並正確，將不進行任何動作
-    #     # 若偵測資料夾類別但有異常，則會報錯，需重新建立
-    #     for labldir in labeldirs:
-    #         newdir = os.path.join(train_folder, labldir)
-    #         if not os.path.exists(newdir):
-    #             os.makedirs(newdir, exist_ok=True)
+        # 檢查路徑下是否建立資料夾類別
+        # 如果尚未建立則會自動搬移資料
+        # 若成功偵測到資料夾類別並正確，將不進行任何動作
+        # 若偵測資料夾類別但有異常，則會報錯，需重新建立
+        for labldir in labeldirs:
+            newdir = os.path.join(train_folder, labldir)
+            if not os.path.exists(newdir):
+                os.makedirs(newdir, exist_ok=True)
 
-    #     # 移除暫存檔案
-    #     if os.path.exists(temp_folder):
-    #         print(f"Removing {temp_folder} ...")
-    #         shutil.rmtree(temp_folder)
+        # 移動資料
+        print("Moving data to label directorys ...")
+        temp_cat_folder = os.path.join(temp_folder, "PetImages", "Cat")
+        temp_dog_folder = os.path.join(temp_folder, "PetImages", "Dog")
+        for file in os.listdir(temp_cat_folder):
+            if file == "Thumbs.db":
+                continue
+            src = os.path.join(temp_cat_folder, file)
+            dst = os.path.join(train_folder, labeldirs[0], file)
+            shutil.move(src, dst)
+        for file in os.listdir(temp_dog_folder):
+            if file == "Thumbs.db":
+                continue
+            src = os.path.join(temp_dog_folder, file)
+            dst = os.path.join(train_folder, labeldirs[1], file)
+            shutil.move(src, dst)
+
+        # 移除暫存檔案
+        if os.path.exists(temp_folder):
+            print(f"Removing {temp_folder} ...")
+            shutil.rmtree(temp_folder)
         
-    #     print("Making sucessfully.")
-    # else:
-    #     print("Already make dataset.")
+        print("Making sucessfully.")
+    else:
+        print("Already make dataset.")
 
 
 def cats_vs_dogs_by_kaggle_zipfile(dataset_path):
