@@ -110,7 +110,7 @@ def generate_classification_dataset(directory,
         rng = np.random.RandomState(seed)
         rng.shuffle(labels)
 
-    def load_img(x):
+    def load_img(x, subset):
         x = tf.io.read_file(x)
         num_channels = 1 if gray else 3
         x = tf.io.decode_image(x, channels=num_channels, expand_animations=False)
@@ -169,8 +169,8 @@ def generate_classification_dataset(directory,
 
         tra_path_ds = tf.data.Dataset.from_tensor_slices(file_paths[:num_val_samples])
         val_path_ds = tf.data.Dataset.from_tensor_slices(file_paths[num_val_samples:])
-        tra_img_ds = tra_path_ds.map(load_img)
-        val_img_ds = val_path_ds.map(load_img)
+        tra_img_ds = tra_path_ds.map(lambda x: load_img(x, "train"))
+        val_img_ds = val_path_ds.map(lambda x: load_img(x, "valid"))
 
         tra_lbl_ds = tf.data.Dataset.from_tensor_slices(labels[:num_val_samples])
         val_lbl_ds = tf.data.Dataset.from_tensor_slices(labels[num_val_samples:])
