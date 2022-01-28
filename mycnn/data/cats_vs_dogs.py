@@ -3,6 +3,7 @@ import os
 import shutil
 import zipfile
 import requests
+import tensorflow as tf
 import cv2
 
 
@@ -13,7 +14,6 @@ def cats_vs_dogs_from_MSCenter(dataset_path):
     train_folder = os.path.join(main_folder, "train")
     original_zip_file = os.path.join(main_folder, "dogs-vs-cats.zip")
     labeldirs = ["Cats", "Dogs"]
-    validnums = [12476, 12470]
     flag = False
 
     if not os.path.exists(main_folder):
@@ -27,10 +27,10 @@ def cats_vs_dogs_from_MSCenter(dataset_path):
     else:
         print("Already download zip file.")
 
-    for labldir, validnum in zip(labeldirs, validnums):
+    for labldir in labeldirs:
         check_path = os.path.join(train_folder, labldir)
         if os.path.exists(check_path):
-            if not os.listdir(check_path) or len(os.listdir(check_path)) != validnum:
+            if not os.listdir(check_path) or len(os.listdir(check_path)) != 12000:
                 raise ValueError(f"Detect incomplete data in {check_path}. "
                                 "Please delete all data and unzip again.")
             flag = False
@@ -57,29 +57,38 @@ def cats_vs_dogs_from_MSCenter(dataset_path):
 
         # 移動資料
         cnt_invalid = 0
+        cat_num = 0
+        dog_num = 0
         print("Moving data to label directorys ...")
         temp_cat_folder = os.path.join(temp_folder, "PetImages", "Cat")
         temp_dog_folder = os.path.join(temp_folder, "PetImages", "Dog")
         for file in os.listdir(temp_cat_folder):
             if file == "Thumbs.db":
                 continue
+            if cat_num >= 12000:
+                continue
             src = os.path.join(temp_cat_folder, file)
             dst = os.path.join(train_folder, labeldirs[0], file)
             try:
-                valid_img = cv2.imread(src)
-                valid_img.shape
+                img_bytes = tf.io.read_file(src)
+                decoded_img = tf.io.decode_image(img_bytes)
                 shutil.move(src, dst)
+                cat_num += 1
             except:
                 cnt_invalid += 1
+        
         for file in os.listdir(temp_dog_folder):
             if file == "Thumbs.db":
+                continue
+            if dog_num >= 12000:
                 continue
             src = os.path.join(temp_dog_folder, file)
             dst = os.path.join(train_folder, labeldirs[1], file)
             try:
-                valid_img = cv2.imread(src)
-                valid_img.shape
+                img_bytes = tf.io.read_file(src)
+                decoded_img = tf.io.decode_image(img_bytes)
                 shutil.move(src, dst)
+                dog_num += 1
             except:
                 cnt_invalid += 1
 
