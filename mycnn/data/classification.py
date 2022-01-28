@@ -13,57 +13,54 @@ import numpy as np
 from natsort import natsorted
 import tensorflow as tf
 
-
 ALLOWLIST_FORMATS = (".bmp", ".gif", ".jpeg", ".jpg", ".png")
 
 
-def flip_h(x):
-    x = tf.image.random_flip_left_right(x)
+def flip_h(x, **kwargs):
+    seed = tf.random.uniform([2], 1, 10000, dtype=tf.int32)
+    x = tf.image.stateless_random_flip_left_right(x, seed=seed)
     return x
 
 
-def flip_v(x):
-    x = tf.image.random_flip_up_down(x)
+def flip_v(x, **kwargs):
+    seed = tf.random.uniform([2], 1, 10000, dtype=tf.int32)
+    x = tf.image.stateless_random_flip_up_down(x, seed=seed)
     return x
 
 
-def rotate(x):
+def rotate(x, **kwargs):
     k = tf.random.uniform([], 1, 4, tf.int32)
     x = tf.image.rot90(x, k)
     return x
 
 
-def hue(x, val=0.08):  # 色調
-    x = tf.image.random_hue(x, val)
+def hue(x, max_delta=0.08, **kwargs):  # 色調
+    seed = tf.random.uniform([2], 1, 10000, dtype=tf.int32)
+    x = tf.image.stateless_random_hue(x, max_delta, seed=seed)
     return x
 
 
-def brightness(x, val=0.05):  # 亮度
-    x = tf.image.random_brightness(x, val)
+def brightness(x, max_delta=0.5, **kwargs):  # 亮度
+    seed = tf.random.uniform([2], 1, 10000, dtype=tf.int32)
+    x = tf.image.stateless_random_brightness(x, max_delta, seed=seed)
     return x
 
 
-def saturation(x, minval=0.6, maxval=1.6):  # 飽和度
-    x = tf.image.random_saturation(x, minval, maxval)
+def saturation(x, lower=0.6, upper=1.6, **kwargs):  # 飽和度
+    seed = tf.random.uniform([2], 1, 10000, dtype=tf.int32)
+    x = tf.image.stateless_random_saturation(x, lower, upper, seed=seed)
     return x
 
 
-def contrast(x, minval=0.7, maxval=1.3):  # 對比度
-    x = tf.image.random_contrast(x, minval, maxval)
+def contrast(x, lower=0.7, upper=1.3, **kwargs):  # 對比度
+    seed = tf.random.uniform([2], 1, 10000, dtype=tf.int32)
+    x = tf.image.stateless_random_contrast(x, lower, upper, seed=seed)
     return x
 
 
-def color(x):
-    x = hue(x)
-    x = saturation(x)
-    x = brightness(x)
-    x = contrast(x)
-    return x
-
-
-def zoom_scale(x, scale_minval=0.5, scale_maxval=1.5):
-    height, width, channel = x.shape
-    scale = tf.random.uniform([], scale_minval, scale_maxval)
+def zoom_scale(x, scale_minval=0.5, scale_maxval=1.5, **kwargs):
+    height, width, _ = x.shape
+    scale = tf.random.uniform([], minval=scale_minval, maxval=scale_maxval)
     new_size = (scale*height, scale*width)
     x = tf.image.resize(x, new_size)
     x = tf.image.resize_with_crop_or_pad(x, height, width)
@@ -73,6 +70,8 @@ def zoom_scale(x, scale_minval=0.5, scale_maxval=1.5):
 def generate_classification_dataset(directory,
                                     batch_size=32,
                                     image_size=(256, 256),
+                                    subtract_mean=None,
+                                    divide_stddev=None,
                                     gray=False,
                                     shuffle_filepath=False,
                                     shuffle_dataset=False,
@@ -103,40 +102,58 @@ def generate_classification_dataset(directory,
 
     print(f'Found {len(file_paths)} files belonging to {len(class_names)} classes.')
 
-    
     if shuffle_filepath:
         rng = np.random.RandomState(seed)
         rng.shuffle(file_paths)
         rng = np.random.RandomState(seed)
         rng.shuffle(labels)
 
-    def load_img(x, subset):
-        x = tf.io.read_file(x)
+    def load_img(x, subset: str):
         num_channels = 1 if gray else 3
+        x = tf.io.read_file(x)
         x = tf.io.decode_image(x, channels=num_channels, expand_animations=False)
         x = tf.image.resize(x, image_size)
-        x = tf.cast(x, tf.float32) / 255.0
+        x = tf.cast(x, tf.uint8)
         
+        print(f"\n{subset} - ", end="")
         if len(x.shape) == 2:
-            print("Gray image, add one channel!!!", end=" - ")
+            print("Gray image, add one channel. - ", end="")
             x = tf.expand_dims(x, axis=-1)
         else:
             if x.shape[-1] == 3:
-                print("RGB image", end=" - ")
+                print("RGB image - ", end="")
             elif  x.shape[-1] == 1:
-                print("Gray image", end=" - ")
+                print("Gray image - ", end="")
         
-        if kwargs:
-            print("Data Augmentation!!!")
+        if kwargs and subset.startswith("train"):
+            print("Use data augmentation.")
             
             for k in kwargs.keys():
-                print(" "*5, k)
+                print(" "*5, k, ":", kwargs[k])
                 aug_fn = eval(k)
                 x = tf.cond(
                     tf.random.uniform((), 0, 1) > 0.5,
                     lambda: aug_fn(x), lambda: x)
         else:
-            print("Not Data Augmentation!!!")
+            print("Not use data augmentation.")
+        
+        x = tf.cast(x, tf.float32)
+        
+        clip_value_min = 0
+        clip_value_max = 255
+
+        if subtract_mean is not None:
+            x -= subtract_mean
+            clip_value_min -= subtract_mean
+            clip_value_max -= subtract_mean
+
+        if divide_stddev is not None:
+            x /= divide_stddev
+            clip_value_min /= divide_stddev
+            clip_value_max /= divide_stddev
+        
+        print(f"Rescale value to [{clip_value_min}, {clip_value_max}].")
+        x = tf.clip_by_value(x, clip_value_min, clip_value_max)
             
         return x
 
@@ -153,7 +170,7 @@ def generate_classification_dataset(directory,
 
         dataset = tf.data.Dataset.zip((img_ds, lbl_ds))
         if shuffle_dataset:
-            print("Shuffle Dataset!!!")
+            print("Shuffle dataset!!!")
             dataset = dataset.shuffle(buffer_size=batch_size * 8, seed=100)
         dataset = dataset.batch(batch_size)
 
@@ -180,9 +197,8 @@ def generate_classification_dataset(directory,
         tra_dataset = tf.data.Dataset.zip((tra_img_ds, tra_lbl_ds))
         val_dataset = tf.data.Dataset.zip((val_img_ds, val_lbl_ds))
         if shuffle_dataset:
-            print("Shuffle Dataset!!!")
+            print("Shuffle training dataset!!!")
             tra_dataset = tra_dataset.shuffle(buffer_size=batch_size * 8, seed=seed)
-            val_dataset = val_dataset.shuffle(buffer_size=batch_size * 8, seed=seed)
         tra_dataset = tra_dataset.batch(batch_size)
         val_dataset = val_dataset.batch(batch_size)
 
