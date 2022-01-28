@@ -24,7 +24,7 @@
 - [x] Inception V3
 - [x] ResNet18, ResNet50, ResNet101
 - [x] 資料擴增函式 generate_classification_dataset
-- [ ] 測試我的擴增函式對於模型是否有正向影響
+- [ ] 測試我的擴增函式對於模型是否有正向影響 (*目前結果奇差無比........)
 
 ### Segmentation
 
@@ -41,9 +41,31 @@
 - [ ] VOC資料讀取並訓練
 - [ ] COCO資料讀取並訓練
 
-### Others
+## Env
 
-- [ ] 利用註解來解釋被我裝進 `KerasModel` 的 Keras API
-- [ ] 環境建置說明，我使用的版本號
-- [ ] 程式範例說明 (目前有加一些了)
-- [ ] 相關文獻整理
+### Hardware
+
+- Intel(R) Core(TM) i7-7700HQ CPU @ 2.8GHz
+- 24 GB RAM
+- NVIDA GTX 1060 6GB
+
+### Software
+
+- Windows 10 21H2
+- Python 3.7.10 (Anaconda3)
+- Cuda 11.0 + cudnn
+
+### Package
+
+- tensorflow==2.4.1
+- scikit-learn==0.24.2
+- numpy==1.19.5
+- scipy==1.6.3
+- h5py==2.10.0
+- pydot==1.2.2
+- scikit-image==0.18.1
+- opencv==4.5.1.48
+- Pillow==8.2.0
+- pandas==1.2.4
+- natsort==8.0.2
+- tqdm==4.60.0
