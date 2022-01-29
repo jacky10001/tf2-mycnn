@@ -64,6 +64,7 @@ def zoom_scale(x, scale_minval=0.5, scale_maxval=1.5, **kwargs):
     new_size = (scale*height, scale*width)
     x = tf.image.resize(x, new_size)
     x = tf.image.resize_with_crop_or_pad(x, height, width)
+    x = tf.cast(x, tf.uint8)
     return x
 
 
