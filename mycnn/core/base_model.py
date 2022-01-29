@@ -8,12 +8,15 @@ import os.path as osp
 from contextlib import redirect_stdout
 
 import numpy as np
-from tensorflow.keras import callbacks, models
+from tensorflow.keras import callbacks, optimizers, models
 
 from ._file import save_json
 from ._history import (find_all_ckpts, find_best_ckpt, find_last_ckpt,
                        load_history, show_history)
 from ._wrapper import check_filepath, check_state
+
+KERAS_CALLBACKS = list(filter(lambda x: isinstance(x, type), callbacks.__dict__.values()))
+KERAS_OPTIMIZERS = list(filter(lambda x: isinstance(x, type), optimizers.__dict__.values()))
 
 
 class implement_model:
@@ -142,8 +145,7 @@ class KerasModel(object):
         只允許使用 Keras Callback API，可參考下面網址的總覽 (namespace)
         https://www.tensorflow.org/api_docs/python/tf/keras/callbacks
         """
-        keras_cnks_list = list(filter(lambda x: isinstance(x, type), callbacks.__dict__.values()))
-        if type(cbk) not in keras_cnks_list:
+        if type(cbk) not in KERAS_CALLBACKS:
             raise Exception("[Error] Please check your callbacks is `keras.callbacks`.")
         self.__cbks_list.append(cbk)
 
@@ -201,6 +203,13 @@ class KerasModel(object):
         tensorflow.keras.utils
             plot_model:      繪製模型結構，並存成圖檔並歸檔至 logdir 底下
         """
+        if type(loss) != str and hasattr(loss, '__call__'):
+            if loss.__module__ != "tensorflow.python.keras.losses":
+                raise Exception("[Error] Please check your loss is `keras.losses`.")
+        if type(optimizer) != str and hasattr(loss, '__call__'):
+            if type(optimizer) not in KERAS_OPTIMIZERS:
+                raise Exception("[Error] Please check your optimizer is `keras.optimizers`.")
+        
         self.setup_logfile(logdir)
 
         ckpts_filename = "weights.{epoch:05d}-{val_loss:.7f}.h5"
@@ -228,8 +237,8 @@ class KerasModel(object):
         self.__cfg['epochs'] = epochs
         self.__cfg['initial_epoch'] = initial_epoch
         self.__cfg['batch_size'] = batch_size
-        self.__cfg['optimizer'] = optimizer
-        self.__cfg['loss'] = loss
+        self.__cfg['optimizer'] = optimizer.get_config() if type(optimizer) in KERAS_OPTIMIZERS else optimizer
+        self.__cfg['loss'] = loss.__name__ if hasattr(loss, '__call__') else loss
         self.__cfg['metrics'] = metrics
         for item in self.__cfg.items():
             print("{:15} : {}".format(*item))
