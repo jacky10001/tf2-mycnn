@@ -107,10 +107,10 @@ def find_best_ckpt(ckpts, pattern=r"weights.(\d{5})-(\d{1,2}.\d{7})", mode="min"
         val = float(val)
         if val < threshold and mode.lower() == "min":
             threshold = val
-            best_idx = ep
+            best_idx = ep - 1
         elif val > threshold and mode.lower() == "max":
             threshold = val
-            best_idx = ep
+            best_idx = ep - 1
     best_ckpt = ckpts[best_idx]
     print()
     print("best model : {}".format(best_ckpt))
