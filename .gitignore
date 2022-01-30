@@ -118,7 +118,5 @@ dmypy.json
 *.h5
 *.csv
 *.json
-/*.jpg
-/*.png
 log*/
-DogsVsCats/
+datasets/*/
