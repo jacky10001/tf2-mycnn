@@ -132,9 +132,7 @@ def generate_classification_dataset(directory,
             for k in kwargs.keys():
                 print(" "*5, k, ":", kwargs[k])
                 aug_fn = eval(k)
-                x = tf.cond(
-                    tf.random.uniform((), 0, 1) > 0.5,
-                    lambda: aug_fn(x), lambda: x)
+                x = aug_fn(x)
         else:
             print("Not use data augmentation.")
         
