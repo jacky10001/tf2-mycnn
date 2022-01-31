@@ -132,16 +132,14 @@ def generate_classification_dataset(directory,
             for k in kwargs.keys():
                 print(" "*5, k, ":", kwargs[k])
                 aug_fn = eval(k)
-                x = tf.cond(
-                    tf.random.uniform((), 0, 1) > 0.5,
-                    lambda: aug_fn(x), lambda: x)
+                x = aug_fn(x)
         else:
             print("Not use data augmentation.")
         
         x = tf.cast(x, tf.float32)
         
-        clip_value_min = 0
-        clip_value_max = 255
+        clip_value_min = 0.
+        clip_value_max = 255.
 
         if subtract_mean is not None:
             x -= subtract_mean
@@ -180,18 +178,18 @@ def generate_classification_dataset(directory,
 
         return dataset
     else:
-        num_val_samples = int(len(file_paths)*validation_split)
+        num_tra_samples = int(len(file_paths)*(1-validation_split))
         
-        print("Using %d files for training."%(len(file_paths) - num_val_samples))
-        print("Using %d files for validation."%(num_val_samples))
+        print("Using %d files for training."%(num_tra_samples))
+        print("Using %d files for validation."%(len(file_paths)-num_tra_samples))
 
-        tra_path_ds = tf.data.Dataset.from_tensor_slices(file_paths[:num_val_samples])
-        val_path_ds = tf.data.Dataset.from_tensor_slices(file_paths[num_val_samples:])
+        tra_path_ds = tf.data.Dataset.from_tensor_slices(file_paths[:num_tra_samples])
+        val_path_ds = tf.data.Dataset.from_tensor_slices(file_paths[num_tra_samples:])
         tra_img_ds = tra_path_ds.map(lambda x: load_img(x, "train"))
         val_img_ds = val_path_ds.map(lambda x: load_img(x, "valid"))
 
-        tra_lbl_ds = tf.data.Dataset.from_tensor_slices(labels[:num_val_samples])
-        val_lbl_ds = tf.data.Dataset.from_tensor_slices(labels[num_val_samples:])
+        tra_lbl_ds = tf.data.Dataset.from_tensor_slices(labels[:num_tra_samples])
+        val_lbl_ds = tf.data.Dataset.from_tensor_slices(labels[num_tra_samples:])
         tra_lbl_ds = tra_lbl_ds.map(load_lbl)
         val_lbl_ds = val_lbl_ds.map(load_lbl)
 
@@ -205,7 +203,7 @@ def generate_classification_dataset(directory,
 
         tra_dataset.class_names = class_names
         val_dataset.class_names = class_names
-        tra_dataset.file_paths = file_paths[:num_val_samples]
-        val_dataset.file_paths = file_paths[num_val_samples:]
+        tra_dataset.file_paths = file_paths[:num_tra_samples]
+        val_dataset.file_paths = file_paths[num_tra_samples:]
 
         return tra_dataset, val_dataset
