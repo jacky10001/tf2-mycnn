@@ -94,14 +94,16 @@ def generate_segmentation_dataset(directory,
         for fname in natsorted(files):
             if fname.lower().endswith(ALLOWLIST_FORMATS):
                 filepath = os.path.join(root, fname)
-                if os.path.basename(root).lower().endwith("images"):
+                if os.path.basename(root).lower().endswith("images"):
                     image_paths.append(filepath)
-                if os.path.basename(root).lower().endwith("masks"):
+                if os.path.basename(root).lower().endswith("masks"):
                     mask_paths.append(filepath)
     if not image_paths:
         raise ValueError("No images found.")
     if not mask_paths:
         raise ValueError("No masks found.")
+    if len(image_paths) != len(mask_paths):
+        raise ValueError("The number of images and masks are not equal.")
 
     print(f'Found {len(image_paths)} image files and {len(mask_paths)}.')
 
@@ -169,7 +171,7 @@ def generate_segmentation_dataset(directory,
     
     if not validation_split:
         path_ds = tf.data.Dataset.from_tensor_slices(image_paths)
-        img_ds = path_ds.map(load_img)
+        img_ds = path_ds.map(lambda x: load_img(x, "all"))
 
         mask_ds = tf.data.Dataset.from_tensor_slices(mask_paths)
         mask_ds = mask_ds.map(load_mask)
@@ -184,33 +186,33 @@ def generate_segmentation_dataset(directory,
         dataset.mask_paths = mask_paths
 
         return dataset
-    # else:
-    #     num_val_samples = int(len(file_paths)*validation_split)
+    else:
+        num_val_samples = int(len(image_paths)*validation_split)
         
-    #     print("Using %d files for training."%(len(file_paths) - num_val_samples))
-    #     print("Using %d files for validation."%(num_val_samples))
+        print("Using %d files for training."%(len(image_paths) - num_val_samples))
+        print("Using %d files for validation."%(num_val_samples))
 
-    #     tra_path_ds = tf.data.Dataset.from_tensor_slices(file_paths[:num_val_samples])
-    #     val_path_ds = tf.data.Dataset.from_tensor_slices(file_paths[num_val_samples:])
-    #     tra_img_ds = tra_path_ds.map(lambda x: load_img(x, "train"))
-    #     val_img_ds = val_path_ds.map(lambda x: load_img(x, "valid"))
+        tra_path_ds = tf.data.Dataset.from_tensor_slices(image_paths[:num_val_samples])
+        val_path_ds = tf.data.Dataset.from_tensor_slices(image_paths[num_val_samples:])
+        tra_img_ds = tra_path_ds.map(lambda x: load_img(x, "train"))
+        val_img_ds = val_path_ds.map(lambda x: load_img(x, "valid"))
 
-    #     tra_lbl_ds = tf.data.Dataset.from_tensor_slices(labels[:num_val_samples])
-    #     val_lbl_ds = tf.data.Dataset.from_tensor_slices(labels[num_val_samples:])
-    #     tra_lbl_ds = tra_lbl_ds.map(load_lbl)
-    #     val_lbl_ds = val_lbl_ds.map(load_lbl)
+        tra_lbl_ds = tf.data.Dataset.from_tensor_slices(mask_paths[:num_val_samples])
+        val_lbl_ds = tf.data.Dataset.from_tensor_slices(mask_paths[num_val_samples:])
+        tra_lbl_ds = tra_lbl_ds.map(load_mask)
+        val_lbl_ds = val_lbl_ds.map(load_mask)
 
-    #     tra_dataset = tf.data.Dataset.zip((tra_img_ds, tra_lbl_ds))
-    #     val_dataset = tf.data.Dataset.zip((val_img_ds, val_lbl_ds))
-    #     if shuffle_dataset:
-    #         print("Shuffle training dataset!!!")
-    #         tra_dataset = tra_dataset.shuffle(buffer_size=batch_size * 8, seed=seed)
-    #     tra_dataset = tra_dataset.batch(batch_size)
-    #     val_dataset = val_dataset.batch(batch_size)
+        tra_dataset = tf.data.Dataset.zip((tra_img_ds, tra_lbl_ds))
+        val_dataset = tf.data.Dataset.zip((val_img_ds, val_lbl_ds))
+        if shuffle_dataset:
+            print("Shuffle training dataset!!!")
+            tra_dataset = tra_dataset.shuffle(buffer_size=batch_size * 8, seed=seed)
+        tra_dataset = tra_dataset.batch(batch_size)
+        val_dataset = val_dataset.batch(batch_size)
 
-    #     tra_dataset.class_names = class_names
-    #     val_dataset.class_names = class_names
-    #     tra_dataset.file_paths = file_paths[:num_val_samples]
-    #     val_dataset.file_paths = file_paths[num_val_samples:]
+        tra_dataset.image_paths = image_paths[:num_val_samples]
+        val_dataset.image_paths = image_paths[num_val_samples:]
+        tra_dataset.mask_paths = mask_paths[:num_val_samples]
+        val_dataset.mask_paths = mask_paths[num_val_samples:]
 
-    #     return tra_dataset, val_dataset
+        return tra_dataset, val_dataset
