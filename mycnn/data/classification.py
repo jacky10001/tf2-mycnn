@@ -162,7 +162,7 @@ def generate_classification_dataset(directory,
     
     if not validation_split:
         path_ds = tf.data.Dataset.from_tensor_slices(file_paths)
-        img_ds = path_ds.map(load_img)
+        img_ds = path_ds.map(lambda x: load_img(x, "all"))
 
         lbl_ds = tf.data.Dataset.from_tensor_slices(labels)
         lbl_ds = lbl_ds.map(load_lbl)
