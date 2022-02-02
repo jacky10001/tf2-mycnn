@@ -166,7 +166,7 @@ def generate_segmentation_dataset(directory,
     def load_mask(y):
         y = tf.io.read_file(y)
         y = tf.io.decode_image(y, channels=1, expand_animations=False)
-        y = tf.image.resize(y, mask_size, method="nearest")  # 使用近鄰插植
+        y = tf.image.resize(y, mask_size, method="nearest")  # 使用近鄰插植，處理物體邊緣值維持一致
         y = tf.cast(y, tf.uint8)
         y = tf.reshape(y, (-1,))
         y = tf.one_hot(y, classes_num)
