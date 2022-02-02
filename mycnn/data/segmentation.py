@@ -69,6 +69,7 @@ def generate_segmentation_dataset(directory,
                                   batch_size=10,
                                   image_size=(256, 256),
                                   mask_size=None,
+                                  classes_num=21,
                                   subtract_mean=None,
                                   divide_stddev=None,
                                   gray=False,
@@ -165,8 +166,11 @@ def generate_segmentation_dataset(directory,
     def load_mask(y):
         y = tf.io.read_file(y)
         y = tf.io.decode_image(y, channels=1, expand_animations=False)
-        y = tf.image.resize(y, mask_size)
-        y = tf.cast(y, tf.float32)
+        y = tf.image.resize(y, mask_size, method="nearest")  # 使用近鄰插植
+        y = tf.cast(y, tf.uint8)
+        y = tf.reshape(y, (-1,))
+        y = tf.one_hot(y, classes_num)
+        y = tf.reshape(y, mask_size+(classes_num,))
         return y
     
     if not validation_split:
