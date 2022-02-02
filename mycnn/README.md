@@ -4,11 +4,12 @@
 
 ## `core`
 
-將常用 Keras API 包裝起來
+將常用 Keras API 包裝成類別，將其命名為 `KerasModel`，並實例化物件以呼叫那些方法
 
 ## `data`
 
-讀取資料的相關程式
+- 處理相關資料相關程式
+- 基於 `tf.data.Dataset` 資料集讀取函式
 
 ## `losses`
 
