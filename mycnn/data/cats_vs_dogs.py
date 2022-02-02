@@ -27,18 +27,19 @@ def cats_vs_dogs_from_MSCenter(dataset_path):
     else:
         print("Already download zip file.")
 
-    for labldir in labeldirs:
-        check_path = os.path.join(train_folder, labldir)
+    # 檢查是否有建立資料集，並確認資料是否完整
+    for labeldir in labeldirs:
+        check_path = os.path.join(train_folder, labeldir)
         if os.path.exists(check_path):
             if not os.listdir(check_path) or len(os.listdir(check_path)) != 12000:
                 raise ValueError(f"Detect incomplete data in {check_path}. "
-                                "Please delete all data and unzip again.")
+                                 "Please delete all data and unzip again.")
             flag = False
         else:
             flag = True
 
     if flag:
-        print("Beginning make dataset.")
+        print("Start to make dataset.")
 
         # 解壓縮檔案至暫存資料夾
         with zipfile.ZipFile(original_zip_file, 'r') as zip_ref:
@@ -50,8 +51,8 @@ def cats_vs_dogs_from_MSCenter(dataset_path):
         # 如果尚未建立則會自動搬移資料
         # 若成功偵測到資料夾類別並正確，將不進行任何動作
         # 若偵測資料夾類別但有異常，則會報錯，需重新建立
-        for labldir in labeldirs:
-            newdir = os.path.join(train_folder, labldir)
+        for labeldir in labeldirs:
+            newdir = os.path.join(train_folder, labeldir)
             if not os.path.exists(newdir):
                 os.makedirs(newdir, exist_ok=True)
 
@@ -98,9 +99,9 @@ def cats_vs_dogs_from_MSCenter(dataset_path):
             shutil.rmtree(temp_folder)
         
         print(f"Detect {cnt_invalid} invalid image.")
-        print("Making sucessfully.")
+        print("Finished making dataset.")
     else:
-        print("Already make dataset.")
+        print("Already made dataset.")
 
 
 def cats_vs_dogs_by_kaggle_zipfile(dataset_path):
@@ -119,8 +120,8 @@ def cats_vs_dogs_by_kaggle_zipfile(dataset_path):
                          "Please check your zip file path or you can download from the Kaggle. "
                          "Please find URL https://www.kaggle.com/c/dogs-vs-cats/data")
 
-    for labldir in labeldirs:
-        check_path = os.path.join(train_folder, labldir)
+    for labeldir in labeldirs:
+        check_path = os.path.join(train_folder, labeldir)
         if os.path.exists(check_path):
             if not os.listdir(check_path) or len(os.listdir(check_path)) != 12500:
                 raise ValueError(f"Detect incomplete data in {check_path}. "
@@ -147,8 +148,8 @@ def cats_vs_dogs_by_kaggle_zipfile(dataset_path):
         # 如果尚未建立則會自動搬移資料
         # 若成功偵測到資料夾類別並正確，將不進行任何動作
         # 若偵測資料夾類別但有異常，則會報錯，需重新建立
-        for labldir in labeldirs:
-            newdir = os.path.join(train_folder, labldir)
+        for labeldir in labeldirs:
+            newdir = os.path.join(train_folder, labeldir)
             if not os.path.exists(newdir):
                 os.makedirs(newdir, exist_ok=True)
 
