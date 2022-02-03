@@ -64,3 +64,9 @@
 - pandas==1.2.4
 - natsort==8.0.2
 - tqdm==4.60.0
+
+## Refer
+
+- [Dogs VS. Cats | Kaggle](https://www.kaggle.com/c/dogs-vs-cats)
+- [Kaggle Cats and Dogs Dataset - Microsoft](https://www.microsoft.com/en-us/download/details.aspx?id=54765)
+- [VOC2012](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/index.html#devkit)
