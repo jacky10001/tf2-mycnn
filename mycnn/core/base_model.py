@@ -204,7 +204,8 @@ class KerasModel(object):
             plot_model:      繪製模型結構，並存成圖檔並歸檔至 logdir 底下
         """
         if type(loss) != str and hasattr(loss, '__call__'):
-            if loss.__module__ != "tensorflow.python.keras.losses":
+            if loss.__module__.find("tensorflow.python.keras.losses") < 0 \
+                and loss.__module__.find("mycnn.losses") < 0:
                 raise Exception("[Error] Please check your loss is `keras.losses`.")
         if type(optimizer) != str and hasattr(loss, '__call__'):
             if type(optimizer) not in KERAS_OPTIMIZERS:
