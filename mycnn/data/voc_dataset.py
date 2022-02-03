@@ -10,9 +10,8 @@ import cv2
 def download_pascal_voc_dataset(dataset_path):
     # 自動設定相關路徑
     main_folder = os.path.join(dataset_path, "VOC")
-    voc2012_folder = os.path.join(main_folder, "voc2012")
+    untar_folder = os.path.join(main_folder, "VOCdevkit")
     tar_file = os.path.join(main_folder, "VOCtrainval_11-May-2012.tar")
-    flag = True
 
     if not os.path.exists(main_folder):
         os.makedirs(main_folder, exist_ok=True)
@@ -25,11 +24,11 @@ def download_pascal_voc_dataset(dataset_path):
     else:
         print("Already download tar file.")
     
-    if not os.path.exists(voc2012_folder):
+    if not os.path.exists(untar_folder):
         # 解壓縮檔案至暫存資料夾
         with tarfile.TarFile(tar_file, 'r') as tar_ref:
             print(f"Untarring {tar_file} ...")
-            os.makedirs(voc2012_folder, exist_ok=True)
-            tar_ref.extractall(voc2012_folder)
+            os.makedirs(main_folder, exist_ok=True)
+            tar_ref.extractall(main_folder)
     else:
         print("Already Uutar tar file.")
