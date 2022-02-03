@@ -13,6 +13,8 @@
 因為我是從各種論文、書籍、網路資料來進行學習，也參考 TensorFlow、Keras、PyTorch 裡的程式，  
 所以會跟大部分程式碼雷同，純粹是基於將自己學習過的東西進行分享，也歡迎剛接觸 AI 的同學參考。
 
+我的開發環境整理在 [Github Wiki](https://github.com/jacky10001/tf2-mycnn/wiki/%E9%96%8B%E7%99%BC%E6%96%87%E6%AA%94-%E7%92%B0%E5%A2%83%E8%88%87%E4%BE%9D%E8%B3%B4%E5%A5%97%E4%BB%B6)
+
 ## Todo
 
 ### Classification
@@ -35,10 +37,6 @@
 - [ ] RCNN
 - [ ] VOC資料讀取並訓練
 - [ ] COCO資料讀取並訓練
-
-## 環境說明
-
-[環境說明](https://github.com/jacky10001/tf2-mycnn/wiki/%E9%96%8B%E7%99%BC%E6%96%87%E6%AA%94-%E7%92%B0%E5%A2%83%E8%88%87%E4%BE%9D%E8%B3%B4%E5%A5%97%E4%BB%B6)
 
 ## Refer
 
