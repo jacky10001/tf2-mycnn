@@ -20,17 +20,21 @@ from tensorflow.keras import layers
 from .core.base_model import KerasModel
 
 
-def my_vgg16(x_in) -> list:
+def my_vgg16(x_in, filters_list: list=None) -> list:
     """ my_vgg16
     使用 Keras Layers API 自行建構 VGG16 骨幹網路
     全連接層 (fully connection) 使用卷積層來實現
 
     Arguments
     x_in: 輸入 Tensor (tf.keras.layers.Input)
+    filters_list: 設置每個 block 層的 filters 數量
 
     Return
     pool_tensor: 回傳 pool list，包含 block3_pool、block4_pool、最終輸出
     """
+    if isinstance(filters_list, list):
+        if len(filters_list) != 6:
+            raise ValueError("Error: filters_list length must be 6.")
 
     pool_tensor = []
 
@@ -42,7 +46,7 @@ def my_vgg16(x_in) -> list:
 
     # vgg block 1
     block_name = "block1"
-    filters = 64
+    filters = 64 if not filters_list else filters_list[0]
     x = layers.Conv2D(filters, kernel_size, padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv1")(x_in)
     x = layers.BatchNormalization(name=block_name+"_bn1")(x)
     x = layers.ReLU(name=block_name+"_relu1")(x)
@@ -53,7 +57,7 @@ def my_vgg16(x_in) -> list:
 
     # vgg block 2
     block_name = "block2"
-    filters = 128
+    filters = 128 if not filters_list else filters_list[1]
     x = layers.Conv2D(filters, kernel_size, padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv1")(x)
     x = layers.BatchNormalization(name=block_name+"_bn1")(x)
     x = layers.ReLU(name=block_name+"_relu1")(x)
@@ -64,7 +68,7 @@ def my_vgg16(x_in) -> list:
 
     # vgg block 3
     block_name = "block3"
-    filters = 256
+    filters = 256 if not filters_list else filters_list[2]
     x = layers.Conv2D(filters, kernel_size, padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv1")(x)
     x = layers.BatchNormalization(name=block_name+"_bn1")(x)
     x = layers.ReLU(name=block_name+"_relu1")(x)
@@ -79,7 +83,7 @@ def my_vgg16(x_in) -> list:
 
     # vgg block 4
     block_name = "block4"
-    filters = 512
+    filters = 512 if not filters_list else filters_list[3]
     x = layers.Conv2D(filters, kernel_size, padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv1")(x)
     x = layers.BatchNormalization(name=block_name+"_bn1")(x)
     x = layers.ReLU(name=block_name+"_relu1")(x)
@@ -94,7 +98,7 @@ def my_vgg16(x_in) -> list:
 
     # vgg block 5
     block_name = "block5"
-    filters = 512
+    filters = 512 if not filters_list else filters_list[4]
     x = layers.Conv2D(filters, kernel_size, padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv1")(x)
     x = layers.BatchNormalization(name=block_name+"_bn1")(x)
     x = layers.ReLU(name=block_name+"_relu1")(x)
@@ -108,7 +112,7 @@ def my_vgg16(x_in) -> list:
 
     # fully connection based on convolution
     block_name = "fc"
-    filters = 4096
+    filters = 4096 if not filters_list else filters_list[5]
     x = layers.Conv2D(filters, (7,7), padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv1")(x)
     x = layers.BatchNormalization(name=block_name+"_bn1")(x)
     x = layers.ReLU(name=block_name+"_relu1")(x)
@@ -126,10 +130,12 @@ class FCN32(KerasModel):
     """ FCN32 """
     def __init__(self,
                  input_shape=(224, 224, 3),
-                 classes_num=1000,
+                 classes_num=256,
+                 filters_list=None,
                  **kwargs):
         self.input_shape = input_shape
         self.classes_num = classes_num
+        self.filters_list = filters_list
         super().__init__(**kwargs)
       
     def build(self):
@@ -140,7 +146,7 @@ class FCN32(KerasModel):
 
         x_in = layers.Input(shape=self.input_shape, name="image")
 
-        _, _, x = my_vgg16(x_in)
+        _, _, x = my_vgg16(x_in, filters_list=self.filters_list)
         
         x = layers.Conv2D(self.classes_num, (1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
         x = layers.Conv2DTranspose(self.classes_num, (32, 32), strides=(32, 32), padding="valid", use_bias=False, name=block_name+"_conv1t")(x)
@@ -154,10 +160,12 @@ class FCN16(KerasModel):
     """ FCN16 """
     def __init__(self,
                  input_shape=(224, 224, 3),
-                 classes_num=1000,
+                 classes_num=256,
+                 filters_list=None,
                  **kwargs):
         self.input_shape = input_shape
         self.classes_num = classes_num
+        self.filters_list = filters_list
         super().__init__(**kwargs)
       
     def build(self):
@@ -168,7 +176,7 @@ class FCN16(KerasModel):
         
         x_in = layers.Input(shape=self.input_shape, name="image")
 
-        pool3, pool4, x = my_vgg16(x_in)
+        pool3, pool4, x = my_vgg16(x_in, filters_list=self.filters_list)
 
         pool4 = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool4')(pool4)
         x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
@@ -188,10 +196,12 @@ class FCN8(KerasModel):
     """ FCN8 """
     def __init__(self,
                  input_shape=(224, 224, 3),
-                 classes_num=1000,
+                 classes_num=256,
+                 filters_list=None,
                  **kwargs):
         self.input_shape = input_shape
         self.classes_num = classes_num
+        self.filters_list = filters_list
         super().__init__(**kwargs)
       
     def build(self):
@@ -202,7 +212,7 @@ class FCN8(KerasModel):
 
         x_in = layers.Input(shape=self.input_shape, name="image")
 
-        pool3, pool4, x = my_vgg16(x_in)
+        pool3, pool4, x = my_vgg16(x_in, filters_list=self.filters_list)
 
         pool4 = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool4')(pool4)
         x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
@@ -228,7 +238,7 @@ class FCN32_KERAS(KerasModel):
     """
     def __init__(self,
                  input_shape=(224, 224, 3),
-                 classes_num=1000,
+                 classes_num=256,
                  **kwargs):
         self.input_shape = input_shape
         self.classes_num = classes_num
@@ -271,7 +281,7 @@ class FCN16_KERAS(KerasModel):
     """
     def __init__(self,
                  input_shape=(224, 224, 3),
-                 classes_num=1000,
+                 classes_num=256,
                  **kwargs):
         self.input_shape = input_shape
         self.classes_num = classes_num
@@ -322,7 +332,7 @@ class FCN8_KERAS(KerasModel):
     """
     def __init__(self,
                  input_shape=(224, 224, 3),
-                 classes_num=1000,
+                 classes_num=256,
                  **kwargs):
         self.input_shape = input_shape
         self.classes_num = classes_num

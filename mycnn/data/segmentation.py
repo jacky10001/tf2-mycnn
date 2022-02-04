@@ -188,6 +188,7 @@ def generate_segmentation_dataset(directory,
 
         dataset.image_paths = image_paths
         dataset.mask_paths = mask_paths
+        dataset.batch_size = batch_size
 
         return dataset
     else:
@@ -218,5 +219,7 @@ def generate_segmentation_dataset(directory,
         val_dataset.image_paths = image_paths[num_val_samples:]
         tra_dataset.mask_paths = mask_paths[:num_val_samples]
         val_dataset.mask_paths = mask_paths[num_val_samples:]
+        tra_dataset.batch_size = batch_size
+        val_dataset.batch_size = batch_size
 
         return tra_dataset, val_dataset
