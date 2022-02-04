@@ -192,18 +192,18 @@ def generate_segmentation_dataset(directory,
 
         return dataset
     else:
-        num_val_samples = int(len(image_paths)*validation_split)
+        num_tra_samples = int(len(image_paths)*(1-validation_split))
         
-        print("Using %d files for training."%(len(image_paths) - num_val_samples))
-        print("Using %d files for validation."%(num_val_samples))
+        print("Using %d files for training."%(num_tra_samples))
+        print("Using %d files for validation."%(len(image_paths)-num_tra_samples))
 
-        tra_path_ds = tf.data.Dataset.from_tensor_slices(image_paths[:num_val_samples])
-        val_path_ds = tf.data.Dataset.from_tensor_slices(image_paths[num_val_samples:])
+        tra_path_ds = tf.data.Dataset.from_tensor_slices(image_paths[:num_tra_samples])
+        val_path_ds = tf.data.Dataset.from_tensor_slices(image_paths[num_tra_samples:])
         tra_img_ds = tra_path_ds.map(lambda x: load_img(x, "train"))
         val_img_ds = val_path_ds.map(lambda x: load_img(x, "valid"))
 
-        tra_lbl_ds = tf.data.Dataset.from_tensor_slices(mask_paths[:num_val_samples])
-        val_lbl_ds = tf.data.Dataset.from_tensor_slices(mask_paths[num_val_samples:])
+        tra_lbl_ds = tf.data.Dataset.from_tensor_slices(mask_paths[:num_tra_samples])
+        val_lbl_ds = tf.data.Dataset.from_tensor_slices(mask_paths[num_tra_samples:])
         tra_lbl_ds = tra_lbl_ds.map(load_mask)
         val_lbl_ds = val_lbl_ds.map(load_mask)
 
@@ -215,10 +215,10 @@ def generate_segmentation_dataset(directory,
         tra_dataset = tra_dataset.batch(batch_size)
         val_dataset = val_dataset.batch(batch_size)
 
-        tra_dataset.image_paths = image_paths[:num_val_samples]
-        val_dataset.image_paths = image_paths[num_val_samples:]
-        tra_dataset.mask_paths = mask_paths[:num_val_samples]
-        val_dataset.mask_paths = mask_paths[num_val_samples:]
+        tra_dataset.image_paths = image_paths[:num_tra_samples]
+        val_dataset.image_paths = image_paths[num_tra_samples:]
+        tra_dataset.mask_paths = mask_paths[:num_tra_samples]
+        val_dataset.mask_paths = mask_paths[num_tra_samples:]
         tra_dataset.batch_size = batch_size
         val_dataset.batch_size = batch_size
 
