@@ -13,41 +13,10 @@ from tensorflow.keras import callbacks, optimizers, models
 from ._file import save_json
 from ._history import (find_all_ckpts, find_best_ckpt, find_last_ckpt,
                        load_history, show_history)
-from ._wrapper import check_filepath, check_state
+from ._wrapper import check_filepath, check_state, implement_model
 
 KERAS_CALLBACKS = list(filter(lambda x: isinstance(x, type), callbacks.__dict__.values()))
 KERAS_OPTIMIZERS = list(filter(lambda x: isinstance(x, type), optimizers.__dict__.values()))
-
-
-class implement_model:
-    """
-    實例化模型物件 (tf.keras.models API)
-    """
-    def __init__(self, method):
-        self.method = method
-    
-    def __get__(self, instance, owner):
-        def wrapper(*args, **kwargs):
-            target = owner() if instance == None else instance
-            mth_name = self.method.__name__
-
-            if mth_name == "setup_model":
-                name = kwargs.get('name', "cnn")
-                inputs, outputs = self.method(owner, *args, **kwargs)
-                target._KerasModel__M = models.Model(inputs=inputs, outputs=outputs, name=name)
-            
-            weights_path = kwargs.get('weights_path', "")
-            if osp.exists(weights_path):
-                print('[Info] Pre-trained weights:',  weights_path)
-                target._KerasModel__M.load_weights(weights_path)
-            
-            if kwargs.get('verbose', False):
-                target._KerasModel__M.summary()
-            
-            target.built = True
-            target.training = False
-            return target
-        return wrapper
 
 
 class KerasModel(object):
