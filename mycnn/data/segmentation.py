@@ -170,7 +170,7 @@ def generate_segmentation_dataset(directory,
         y = tf.cast(y, tf.uint8)
         y = tf.reshape(y, (-1,))
         y = tf.one_hot(y, classes_num)
-        y = tf.reshape(y, mask_size+(classes_num,))
+        # y = tf.reshape(y, mask_size+(classes_num,))
         return y
     
     if not validation_split:
