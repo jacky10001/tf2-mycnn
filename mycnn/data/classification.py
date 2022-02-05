@@ -175,6 +175,7 @@ def generate_classification_dataset(directory,
 
         dataset.class_names = class_names
         dataset.file_paths = file_paths
+        dataset.batch_size = batch_size
 
         return dataset
     else:
@@ -205,5 +206,7 @@ def generate_classification_dataset(directory,
         val_dataset.class_names = class_names
         tra_dataset.file_paths = file_paths[:num_tra_samples]
         val_dataset.file_paths = file_paths[num_tra_samples:]
+        tra_dataset.batch_size = batch_size
+        val_dataset.batch_size = batch_size
 
         return tra_dataset, val_dataset

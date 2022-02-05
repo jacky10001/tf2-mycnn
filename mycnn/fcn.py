@@ -20,7 +20,7 @@ from tensorflow.keras import layers
 from .core.base_model import KerasModel
 
 
-def my_vgg16(x_in, filters_list: list=None) -> list:
+def my_vgg16(x_in, filters_list: list=None, use_bn: bool=False) -> list:
     """ my_vgg16
     使用 Keras Layers API 自行建構 VGG16 骨幹網路
     全連接層 (fully connection) 使用卷積層來實現
@@ -48,10 +48,10 @@ def my_vgg16(x_in, filters_list: list=None) -> list:
     block_name = "block1"
     filters = 64 if not filters_list else filters_list[0]
     x = layers.Conv2D(filters, kernel_size, padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv1")(x_in)
-    x = layers.BatchNormalization(name=block_name+"_bn1")(x)
+    x = layers.BatchNormalization(name=block_name+"_bn1")(x) if use_bn else x
     x = layers.ReLU(name=block_name+"_relu1")(x)
     x = layers.Conv2D(filters, kernel_size, padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv2")(x)
-    x = layers.BatchNormalization(name=block_name+"_bn2")(x)
+    x = layers.BatchNormalization(name=block_name+"_bn2")(x) if use_bn else x
     x = layers.ReLU(name=block_name+"_relu2")(x)
     x = layers.MaxPooling2D(pool_size=pool_size, name=block_name+"_pool")(x)
 
@@ -59,10 +59,10 @@ def my_vgg16(x_in, filters_list: list=None) -> list:
     block_name = "block2"
     filters = 128 if not filters_list else filters_list[1]
     x = layers.Conv2D(filters, kernel_size, padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv1")(x)
-    x = layers.BatchNormalization(name=block_name+"_bn1")(x)
+    x = layers.BatchNormalization(name=block_name+"_bn1")(x) if use_bn else x
     x = layers.ReLU(name=block_name+"_relu1")(x)
     x = layers.Conv2D(filters, kernel_size, padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv2")(x)
-    x = layers.BatchNormalization(name=block_name+"_bn2")(x)
+    x = layers.BatchNormalization(name=block_name+"_bn2")(x) if use_bn else x
     x = layers.ReLU(name=block_name+"_relu2")(x)
     x = layers.MaxPooling2D(pool_size=pool_size, name=block_name+"_pool")(x)
 
@@ -70,13 +70,13 @@ def my_vgg16(x_in, filters_list: list=None) -> list:
     block_name = "block3"
     filters = 256 if not filters_list else filters_list[2]
     x = layers.Conv2D(filters, kernel_size, padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv1")(x)
-    x = layers.BatchNormalization(name=block_name+"_bn1")(x)
+    x = layers.BatchNormalization(name=block_name+"_bn1")(x) if use_bn else x
     x = layers.ReLU(name=block_name+"_relu1")(x)
     x = layers.Conv2D(filters, kernel_size, padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv2")(x)
-    x = layers.BatchNormalization(name=block_name+"_bn2")(x)
+    x = layers.BatchNormalization(name=block_name+"_bn2")(x) if use_bn else x
     x = layers.ReLU(name=block_name+"_relu2")(x)
     x = layers.Conv2D(filters, kernel_size, padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv3")(x)
-    x = layers.BatchNormalization(name=block_name+"_bn3")(x)
+    x = layers.BatchNormalization(name=block_name+"_bn3")(x) if use_bn else x
     x = layers.ReLU(name=block_name+"_relu3")(x)
     x = layers.MaxPooling2D(pool_size=pool_size, name=block_name+"_pool")(x)
     pool_tensor.append(x)
@@ -85,13 +85,13 @@ def my_vgg16(x_in, filters_list: list=None) -> list:
     block_name = "block4"
     filters = 512 if not filters_list else filters_list[3]
     x = layers.Conv2D(filters, kernel_size, padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv1")(x)
-    x = layers.BatchNormalization(name=block_name+"_bn1")(x)
+    x = layers.BatchNormalization(name=block_name+"_bn1")(x) if use_bn else x
     x = layers.ReLU(name=block_name+"_relu1")(x)
     x = layers.Conv2D(filters, kernel_size, padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv2")(x)
-    x = layers.BatchNormalization(name=block_name+"_bn2")(x)
+    x = layers.BatchNormalization(name=block_name+"_bn2")(x) if use_bn else x
     x = layers.ReLU(name=block_name+"_relu2")(x)
     x = layers.Conv2D(filters, kernel_size, padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv3")(x)
-    x = layers.BatchNormalization(name=block_name+"_bn3")(x)
+    x = layers.BatchNormalization(name=block_name+"_bn3")(x) if use_bn else x
     x = layers.ReLU(name=block_name+"_relu3")(x)
     x = layers.MaxPooling2D(pool_size=pool_size, name=block_name+"_pool")(x)
     pool_tensor.append(x)
@@ -100,13 +100,13 @@ def my_vgg16(x_in, filters_list: list=None) -> list:
     block_name = "block5"
     filters = 512 if not filters_list else filters_list[4]
     x = layers.Conv2D(filters, kernel_size, padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv1")(x)
-    x = layers.BatchNormalization(name=block_name+"_bn1")(x)
+    x = layers.BatchNormalization(name=block_name+"_bn1")(x) if use_bn else x
     x = layers.ReLU(name=block_name+"_relu1")(x)
     x = layers.Conv2D(filters, kernel_size, padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv2")(x)
-    x = layers.BatchNormalization(name=block_name+"_bn2")(x)
+    x = layers.BatchNormalization(name=block_name+"_bn2")(x) if use_bn else x
     x = layers.ReLU(name=block_name+"_relu2")(x)
     x = layers.Conv2D(filters, kernel_size, padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv3")(x)
-    x = layers.BatchNormalization(name=block_name+"_bn3")(x)
+    x = layers.BatchNormalization(name=block_name+"_bn3")(x) if use_bn else x
     x = layers.ReLU(name=block_name+"_relu3")(x)
     x = layers.MaxPooling2D(pool_size=pool_size, name=block_name+"_pool")(x)
 
@@ -114,12 +114,12 @@ def my_vgg16(x_in, filters_list: list=None) -> list:
     block_name = "fc"
     filters = 4096 if not filters_list else filters_list[5]
     x = layers.Conv2D(filters, (7,7), padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv1")(x)
-    x = layers.BatchNormalization(name=block_name+"_bn1")(x)
+    x = layers.BatchNormalization(name=block_name+"_bn1")(x) if use_bn else x
     x = layers.ReLU(name=block_name+"_relu1")(x)
     x = layers.Dropout(0.5, name=block_name+"_dropout")(x)
         
     x = layers.Conv2D(filters, (1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv2")(x)
-    x = layers.BatchNormalization(name=block_name+"_bn2")(x)
+    x = layers.BatchNormalization(name=block_name+"_bn2")(x) if use_bn else x
     x = layers.ReLU(name=block_name+"_relu2")(x)
     pool_tensor.append(x)
 
@@ -333,9 +333,11 @@ class FCN8_KERAS(KerasModel):
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=256,
+                 top_filters=4096,
                  **kwargs):
         self.input_shape = input_shape
         self.classes_num = classes_num
+        self.top_filters = top_filters
         super().__init__(**kwargs)
       
     def build(self):
@@ -349,7 +351,7 @@ class FCN8_KERAS(KerasModel):
 
         # fc
         block_name = "fc"
-        filters = 4096
+        filters = self.top_filters
         x = layers.Conv2D(filters, (7,7), padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv1")(pool5)
         x = layers.BatchNormalization(name=block_name+"_bn1")(x)
         x = layers.ReLU(name=block_name+"_relu1")(x)
@@ -375,7 +377,7 @@ class FCN8_KERAS(KerasModel):
         
         x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv3')(x)
         x = layers.Conv2DTranspose(self.classes_num, (8,8), strides=(8,8), padding="valid", use_bias=False, name=block_name+"_conv3t")(x)
-        # x = layers.Reshape((-1, self.classes_num))(x)
+        x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
         self.setup_model(x_in, x_out, name="FCN8")

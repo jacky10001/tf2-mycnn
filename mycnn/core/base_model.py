@@ -410,6 +410,16 @@ class KerasModel(object):
         self.__M.load_weights(filepath)
         return self
 
+    def load_checkpoint(self, epoch: int=-1):
+        if not osp.exists(self.ckpts_dir):
+            raise NotADirectoryError(f"[Error] No such directory: {self.ckpts_dir} "
+                                     "Please first by calling `setup_logfile()`")
+        ckpt = find_all_ckpts(self.ckpts_dir)[epoch]
+        filepath = osp.join(self.ckpts_dir, ckpt)
+        print(f"Choose {epoch}: {filepath}")
+        self.__M.load_weights(filepath)
+        return self
+
     @property
     def model(self) -> models.Model:
         return self.__M
