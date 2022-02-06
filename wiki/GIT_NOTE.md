@@ -1,6 +1,14 @@
-# Delete GitHub wiki revisions
+# Git command
 
-```python
+## Upload branch to remote repository
+
+```
+git push --set-upstream origin <branch-name>
+```
+
+## Delete GitHub wiki revisions
+
+```
 # Delete prior revisions from a GitHub wiki so that only the most-recent
 # version of the content is available.
 
