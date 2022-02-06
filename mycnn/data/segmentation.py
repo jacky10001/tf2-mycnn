@@ -114,7 +114,7 @@ def generate_segmentation_dataset(directory,
         rng = np.random.RandomState(seed)
         rng.shuffle(mask_paths)
 
-    def load_img(x, subset: str):
+    def load_data(x, y, subset: str):
         num_channels = 1 if gray else 3
         x = tf.io.read_file(x)
         x = tf.io.decode_image(x, channels=num_channels, expand_animations=False)
@@ -160,10 +160,7 @@ def generate_segmentation_dataset(directory,
         
         print(f"Rescale value to [{clip_value_min}, {clip_value_max}].")
         x = tf.clip_by_value(x, clip_value_min, clip_value_max)
-            
-        return x
 
-    def load_mask(y):
         y = tf.io.read_file(y)
         y = tf.io.decode_image(y, channels=1, expand_animations=False)
         y = tf.image.resize(y, mask_size, method="nearest")  # 使用近鄰插植，處理物體邊緣值維持一致
@@ -171,19 +168,20 @@ def generate_segmentation_dataset(directory,
         y = tf.reshape(y, (-1,))
         y = tf.one_hot(y, classes_num)
         # y = tf.reshape(y, mask_size+(classes_num,))
-        return y
+        return x, y
     
     if not validation_split:
-        path_ds = tf.data.Dataset.from_tensor_slices(image_paths)
-        img_ds = path_ds.map(lambda x: load_img(x, "all"))
+        img_path_ds = tf.data.Dataset.from_tensor_slices(image_paths)
+        lbl_oath_ds = tf.data.Dataset.from_tensor_slices(mask_paths)
+        dataset = tf.data.Dataset.zip((img_path_ds, lbl_oath_ds))
 
-        mask_ds = tf.data.Dataset.from_tensor_slices(mask_paths)
-        mask_ds = mask_ds.map(load_mask)
-
-        dataset = tf.data.Dataset.zip((img_ds, mask_ds))
         if shuffle_dataset:
             print("Shuffle dataset!!!")
             dataset = dataset.shuffle(buffer_size=batch_size * 8, seed=100)
+        
+        autotune = tf.data.AUTOTUNE
+        dataset = dataset.map(lambda x, y: load_data(x, y, "all"), num_parallel_calls=autotune)
+
         dataset = dataset.batch(batch_size)
 
         dataset.image_paths = image_paths
@@ -197,21 +195,22 @@ def generate_segmentation_dataset(directory,
         print("Using %d files for training."%(num_tra_samples))
         print("Using %d files for validation."%(len(image_paths)-num_tra_samples))
 
-        tra_path_ds = tf.data.Dataset.from_tensor_slices(image_paths[:num_tra_samples])
-        val_path_ds = tf.data.Dataset.from_tensor_slices(image_paths[num_tra_samples:])
-        tra_img_ds = tra_path_ds.map(lambda x: load_img(x, "train"))
-        val_img_ds = val_path_ds.map(lambda x: load_img(x, "valid"))
+        tra_img_path_ds = tf.data.Dataset.from_tensor_slices(image_paths[:num_tra_samples])
+        tra_lbl_path_ds = tf.data.Dataset.from_tensor_slices(mask_paths[:num_tra_samples])
+        tra_dataset = tf.data.Dataset.zip((tra_img_path_ds, tra_lbl_path_ds))
 
-        tra_lbl_ds = tf.data.Dataset.from_tensor_slices(mask_paths[:num_tra_samples])
-        val_lbl_ds = tf.data.Dataset.from_tensor_slices(mask_paths[num_tra_samples:])
-        tra_lbl_ds = tra_lbl_ds.map(load_mask)
-        val_lbl_ds = val_lbl_ds.map(load_mask)
+        val_img_path_ds = tf.data.Dataset.from_tensor_slices(image_paths[num_tra_samples:])
+        val_lbl_path_ds = tf.data.Dataset.from_tensor_slices(mask_paths[num_tra_samples:])
+        val_dataset = tf.data.Dataset.zip((val_img_path_ds, val_lbl_path_ds))
 
-        tra_dataset = tf.data.Dataset.zip((tra_img_ds, tra_lbl_ds))
-        val_dataset = tf.data.Dataset.zip((val_img_ds, val_lbl_ds))
         if shuffle_dataset:
             print("Shuffle training dataset!!!")
             tra_dataset = tra_dataset.shuffle(buffer_size=batch_size * 8, seed=seed)
+        
+        autotune = tf.data.AUTOTUNE
+        tra_dataset = tra_dataset.map(lambda x, y: load_data(x, y, "train"), num_parallel_calls=autotune)
+        val_dataset = val_dataset.map(lambda x, y: load_data(x, y, "valid"), num_parallel_calls=autotune)
+
         tra_dataset = tra_dataset.batch(batch_size)
         val_dataset = val_dataset.batch(batch_size)
 

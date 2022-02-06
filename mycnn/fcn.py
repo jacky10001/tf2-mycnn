@@ -132,10 +132,12 @@ class FCN32(KerasModel):
                  input_shape=(224, 224, 3),
                  classes_num=256,
                  filters_list=None,
+                 use_bn=False,
                  **kwargs):
         self.input_shape = input_shape
         self.classes_num = classes_num
         self.filters_list = filters_list
+        self.use_bn = use_bn
         super().__init__(**kwargs)
       
     def build(self):
@@ -146,10 +148,11 @@ class FCN32(KerasModel):
 
         x_in = layers.Input(shape=self.input_shape, name="image")
 
-        _, _, x = my_vgg16(x_in, filters_list=self.filters_list)
+        _, _, x = my_vgg16(x_in, filters_list=self.filters_list, use_bn=self.use_bn)
         
         x = layers.Conv2D(self.classes_num, (1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
         x = layers.Conv2DTranspose(self.classes_num, (32, 32), strides=(32, 32), padding="valid", use_bias=False, name=block_name+"_conv1t")(x)
+        x = tf.image.resize(x, method="bilinear")
         x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
@@ -162,10 +165,12 @@ class FCN16(KerasModel):
                  input_shape=(224, 224, 3),
                  classes_num=256,
                  filters_list=None,
+                 use_bn=False,
                  **kwargs):
         self.input_shape = input_shape
         self.classes_num = classes_num
         self.filters_list = filters_list
+        self.use_bn = use_bn
         super().__init__(**kwargs)
       
     def build(self):
@@ -176,7 +181,7 @@ class FCN16(KerasModel):
         
         x_in = layers.Input(shape=self.input_shape, name="image")
 
-        pool3, pool4, x = my_vgg16(x_in, filters_list=self.filters_list)
+        pool3, pool4, x = my_vgg16(x_in, filters_list=self.filters_list, use_bn=self.use_bn)
 
         pool4 = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool4')(pool4)
         x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
@@ -186,6 +191,7 @@ class FCN16(KerasModel):
         pool3 = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool3')(pool3)
         x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv2')(x)
         x = layers.Conv2DTranspose(self.classes_num, (16,16), strides=(16,16), padding="valid", use_bias=False, name=block_name+"_conv2t")(x)
+        x = tf.image.resize(x, method="bilinear")
         x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
@@ -198,10 +204,12 @@ class FCN8(KerasModel):
                  input_shape=(224, 224, 3),
                  classes_num=256,
                  filters_list=None,
+                 use_bn=False,
                  **kwargs):
         self.input_shape = input_shape
         self.classes_num = classes_num
         self.filters_list = filters_list
+        self.use_bn = use_bn
         super().__init__(**kwargs)
       
     def build(self):
@@ -212,7 +220,7 @@ class FCN8(KerasModel):
 
         x_in = layers.Input(shape=self.input_shape, name="image")
 
-        pool3, pool4, x = my_vgg16(x_in, filters_list=self.filters_list)
+        pool3, pool4, x = my_vgg16(x_in, filters_list=self.filters_list, use_bn=self.use_bn)
 
         pool4 = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool4')(pool4)
         x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
@@ -226,6 +234,7 @@ class FCN8(KerasModel):
         
         x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv3')(x)
         x = layers.Conv2DTranspose(self.classes_num, (8,8), strides=(8,8), padding="valid", use_bias=False, name=block_name+"_conv3t")(x)
+        x = tf.image.resize(x, method="bilinear")
         x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
@@ -239,9 +248,11 @@ class FCN32_KERAS(KerasModel):
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=256,
+                 top_filters=4096,
                  **kwargs):
         self.input_shape = input_shape
         self.classes_num = classes_num
+        self.top_filters = top_filters
         super().__init__(**kwargs)
       
     def build(self):
@@ -255,21 +266,20 @@ class FCN32_KERAS(KerasModel):
 
         # fc
         block_name = "fc"
-        filters = 4096
+        filters = self.top_filters
         x = layers.Conv2D(filters, (7,7), padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv1")(x)
-        x = layers.BatchNormalization(name=block_name+"_bn1")(x)
         x = layers.ReLU(name=block_name+"_relu1")(x)
         x = layers.Dropout(0.5, name=block_name+"_dropout")(x)
         
         x = layers.Conv2D(filters, (1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv2")(x)
-        x = layers.BatchNormalization(name=block_name+"_bn2")(x)
         x = layers.ReLU(name=block_name+"_relu2")(x)
         
         # fcn
         block_name = "fcn32"
         x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
         x = layers.Conv2DTranspose(self.classes_num, (32, 32), strides=(32, 32), padding="valid", use_bias=False, name=block_name+"_conv1t")(x)
-        # x = layers.Reshape((-1, self.classes_num))(x)
+        x = tf.image.resize(x, method="bilinear")
+        x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
         self.setup_model(x_in, x_out, name="FCN32")
@@ -282,9 +292,11 @@ class FCN16_KERAS(KerasModel):
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=256,
+                 top_filters=4096,
                  **kwargs):
         self.input_shape = input_shape
         self.classes_num = classes_num
+        self.top_filters = top_filters
         super().__init__(**kwargs)
       
     def build(self):
@@ -298,14 +310,12 @@ class FCN16_KERAS(KerasModel):
 
         # fc
         block_name = "fc"
-        filters = 4096
+        filters = self.top_filters
         x = layers.Conv2D(filters, (7,7), padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv1")(pool5)
-        x = layers.BatchNormalization(name=block_name+"_bn1")(x)
         x = layers.ReLU(name=block_name+"_relu1")(x)
         x = layers.Dropout(0.5, name=block_name+"_dropout")(x)
         
         x = layers.Conv2D(filters, (1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv2")(x)
-        x = layers.BatchNormalization(name=block_name+"_bn2")(x)
         x = layers.ReLU(name=block_name+"_relu2")(x)
         
         # fcn
@@ -320,7 +330,8 @@ class FCN16_KERAS(KerasModel):
         pool3 = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool3')(pool3)
         x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv2')(x)
         x = layers.Conv2DTranspose(self.classes_num, (16,16), strides=(16,16), padding="valid", use_bias=False, name=block_name+"_conv2t")(x)
-        # x = layers.Reshape((-1, self.classes_num))(x)
+        x = tf.image.resize(x, method="bilinear")
+        x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
         self.setup_model(x_in, x_out, name="FCN16")
@@ -353,12 +364,10 @@ class FCN8_KERAS(KerasModel):
         block_name = "fc"
         filters = self.top_filters
         x = layers.Conv2D(filters, (7,7), padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv1")(pool5)
-        x = layers.BatchNormalization(name=block_name+"_bn1")(x)
         x = layers.ReLU(name=block_name+"_relu1")(x)
         x = layers.Dropout(0.5, name=block_name+"_dropout")(x)
         
         x = layers.Conv2D(filters, (1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+"_conv2")(x)
-        x = layers.BatchNormalization(name=block_name+"_bn2")(x)
         x = layers.ReLU(name=block_name+"_relu2")(x)
         
         # fcn
@@ -377,6 +386,7 @@ class FCN8_KERAS(KerasModel):
         
         x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv3')(x)
         x = layers.Conv2DTranspose(self.classes_num, (8,8), strides=(8,8), padding="valid", use_bias=False, name=block_name+"_conv3t")(x)
+        x = tf.image.resize(x, method="bilinear")
         x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
