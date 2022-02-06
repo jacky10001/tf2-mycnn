@@ -11,6 +11,7 @@ Note: 裝飾器可以用來延伸 Python 函式功能
 
 import os
 import os.path as osp
+from tensorflow.keras import models
 
 
 def check_state(*state):
@@ -65,4 +66,35 @@ def check_filepath(mode="save", pos=0, ext="", exts=[]):
             return mth(self, *args, **kwargs)
         return wrapper
     return decorator
+
+
+class implement_model:
+    """
+    實例化模型物件 (tf.keras.models API)
+    """
+    def __init__(self, method):
+        self.method = method
+    
+    def __get__(self, instance, owner):
+        def wrapper(*args, **kwargs):
+            target = owner() if instance == None else instance
+            mth_name = self.method.__name__
+
+            if mth_name == "setup_model":
+                name = kwargs.get('name', "cnn")
+                inputs, outputs = self.method(owner, *args, **kwargs)
+                target._KerasModel__M = models.Model(inputs=inputs, outputs=outputs, name=name)
+            
+            weights_path = kwargs.get('weights_path', "")
+            if osp.exists(weights_path):
+                print('[Info] Pre-trained weights:',  weights_path)
+                target._KerasModel__M.load_weights(weights_path)
+            
+            if kwargs.get('verbose', False):
+                target._KerasModel__M.summary()
+            
+            target.built = True
+            target.training = False
+            return target
+        return wrapper
 

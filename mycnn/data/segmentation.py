@@ -77,8 +77,15 @@ def generate_segmentation_dataset(directory,
                                   shuffle_dataset=False,
                                   seed=100,
                                   validation_split=None,
+                                  mask_mode=0,
                                   **kwargs):
-    mask_size = image_size if not mask_size else mask_size
+    if mask_mode == 1:
+        if not mask_size:
+            raise ValueError("Error: Invalid mask size.")
+        if image_size[0] < mask_size[0] or image_size[1] < mask_size[1]:
+            raise ValueError("Error: Invalid mask size. Image size must be bigger than mask size.")
+    else:
+        mask_size = image_size if not mask_size else mask_size
     
     image_paths = []
     mask_paths = []
@@ -169,6 +176,21 @@ def generate_segmentation_dataset(directory,
         y = tf.one_hot(y, classes_num)
         # y = tf.reshape(y, mask_size+(classes_num,))
         return x, y
+
+    def load_ori_unet_mask(y):
+        y = tf.io.read_file(y)
+        y = tf.io.decode_image(y, channels=1, expand_animations=False)
+        y = tf.image.resize(y, image_size, method="nearest")  # 使用近鄰插植，處理物體邊緣值維持一致
+        h_diff = image_size[0] - mask_size[0]
+        w_diff = image_size[1] - mask_size[0]
+        h_start = tf.cast(h_diff/2, tf.int32)
+        w_start = tf.cast(w_diff/2, tf.int32)
+        y = tf.image.crop_to_bounding_box(y, h_start, w_start, mask_size[0], mask_size[1])
+        y = tf.cast(y, tf.uint8)
+        y = tf.reshape(y, (-1,))
+        y = tf.one_hot(y, classes_num)
+        # y = tf.reshape(y, mask_size+(classes_num,))
+        return y
     
     if not validation_split:
         img_path_ds = tf.data.Dataset.from_tensor_slices(image_paths)

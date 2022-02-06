@@ -206,7 +206,8 @@ class UNet(KerasModel):
         conv3x3 = layers.BatchNormalization(name=block_name+"_bn2")(conv3x3)
         conv3x3 = layers.ReLU(name=block_name+"_relu2")(conv3x3)
         conv1x1 = layers.Conv2D(self.classes_num, (1,1), kernel_initializer=kernel_initializer, name=block_name+"_conv3")(conv3x3)
-
-        x_out = layers.Softmax(name="prediction")(conv1x1)
+        
+        x = layers.Reshape((-1, self.classes_num))(conv1x1)
+        x_out = layers.Softmax(name="prediction")(x)
         
         self.setup_model(x_in, x_out, name="UNet")
