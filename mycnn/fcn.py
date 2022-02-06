@@ -152,7 +152,7 @@ class FCN32(KerasModel):
         
         x = layers.Conv2D(self.classes_num, (1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
         x = layers.Conv2DTranspose(self.classes_num, (32, 32), strides=(32, 32), padding="valid", use_bias=False, name=block_name+"_conv1t")(x)
-        x = tf.image.resize(x, method="bilinear")
+        x = tf.image.resize(x, self.input_shape[:2], method="bilinear")
         x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
