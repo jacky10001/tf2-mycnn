@@ -191,7 +191,7 @@ class FCN16(KerasModel):
         pool3 = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool3')(pool3)
         x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv2')(x)
         x = layers.Conv2DTranspose(self.classes_num, (16,16), strides=(16,16), padding="valid", use_bias=False, name=block_name+"_conv2t")(x)
-        x = tf.image.resize(x, self.input_shape, method="bilinear")
+        x = tf.image.resize(x, self.input_shape[:2], method="bilinear")
         x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
@@ -234,7 +234,7 @@ class FCN8(KerasModel):
         
         x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv3')(x)
         x = layers.Conv2DTranspose(self.classes_num, (8,8), strides=(8,8), padding="valid", use_bias=False, name=block_name+"_conv3t")(x)
-        x = tf.image.resize(x, self.input_shape, method="bilinear")
+        x = tf.image.resize(x, self.input_shape[:2], method="bilinear")
         x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
@@ -278,7 +278,7 @@ class FCN32_KERAS(KerasModel):
         block_name = "fcn32"
         x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv1')(x)
         x = layers.Conv2DTranspose(self.classes_num, (32, 32), strides=(32, 32), padding="valid", use_bias=False, name=block_name+"_conv1t")(x)
-        x = tf.image.resize(x, self.input_shape, method="bilinear")
+        x = tf.image.resize(x, self.input_shape[:2], method="bilinear")
         x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
@@ -330,7 +330,7 @@ class FCN16_KERAS(KerasModel):
         pool3 = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_pool3')(pool3)
         x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv2')(x)
         x = layers.Conv2DTranspose(self.classes_num, (16,16), strides=(16,16), padding="valid", use_bias=False, name=block_name+"_conv2t")(x)
-        x = tf.image.resize(x, self.input_shape, method="bilinear")
+        x = tf.image.resize(x, self.input_shape[:2], method="bilinear")
         x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
@@ -386,7 +386,7 @@ class FCN8_KERAS(KerasModel):
         
         x = layers.Conv2D(self.classes_num, kernel_size=(1,1), padding=padding, kernel_initializer=kernel_initializer, name=block_name+'_conv3')(x)
         x = layers.Conv2DTranspose(self.classes_num, (8,8), strides=(8,8), padding="valid", use_bias=False, name=block_name+"_conv3t")(x)
-        x = tf.image.resize(x, self.input_shape, method="bilinear")
+        x = tf.image.resize(x, self.input_shape[:2], method="bilinear")
         x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
