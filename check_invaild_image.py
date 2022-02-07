@@ -1,5 +1,7 @@
 import os
 import cv2
+
+
 def check_images( s_dir, ext_list):
     bad_images=[]
     bad_ext=[]
@@ -28,6 +30,7 @@ def check_images( s_dir, ext_list):
         else:
             print ('*** WARNING*** you have files in ', s_dir, ' it should only contain sub directories')
     return bad_images, bad_ext
+
 
 source_dir = './datasets/DogsVsCats/train'
 good_exts=['jpg', 'png', 'jpeg', 'gif', 'bmp' ] # list of acceptable extensions
