@@ -71,27 +71,27 @@ def get_dataset(data_Am, data_Ph, data_Lb,
     
     def load_img(Am, Ph):
         # Read amplitude file
-        XA = tf.io.read_file(Am)
-        XA = tf.io.decode_image(
-            XA, channels=num_channels, expand_animations=False)
-        XA = tf.image.resize(XA, (image_height,image_width))
-        XA = tf.dtypes.cast(XA, tf.float32)
-        XA.set_shape((image_height, image_width, num_channels))
+        xa = tf.io.read_file(Am)
+        xa = tf.io.decode_image(
+            xa, channels=num_channels, expand_animations=False)
+        xa = tf.image.resize(xa, (image_height,image_width))
+        xa = tf.dtypes.cast(xa, tf.float32)
+        xa.set_shape((image_height, image_width, num_channels))
         
         # Read phase file
-        XP = tf.io.read_file(Ph)
-        XP = tf.io.decode_image(
-            XP, channels=num_channels, expand_animations=False)
-        XP = tf.image.resize(XP, (image_height,image_width))
-        XP = tf.dtypes.cast(XP, tf.float32)
-        XP.set_shape((image_height, image_width, num_channels))
-        return {'xa': XA, 'xp': XP}
+        xp = tf.io.read_file(Ph)
+        xp = tf.io.decode_image(
+            xp, channels=num_channels, expand_animations=False)
+        xp = tf.image.resize(xp, (image_height,image_width))
+        xp = tf.dtypes.cast(xp, tf.float32)
+        xp.set_shape((image_height, image_width, num_channels))
+        return {'xa': xa, 'xp': xp}
     
     def load_lbl(Lb, one_hot, num_classes):
-        YC = Lb
+        y = Lb
         if one_hot:
-            YC = tf.one_hot(Lb, num_classes)
-        return {'yc': YC}
+            y = tf.one_hot(Lb, num_classes)
+        return {'ya': y, 'yp': y, 'yc': y}
 
     if not num_classes:
         raise ValueError("Error: missing `num_classes`, must be set integer.")
