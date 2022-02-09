@@ -12,6 +12,17 @@
 
 因為我是從各種論文、書籍、網路資料來進行學習，也參考 TensorFlow、Keras、PyTorch 裡的程式，所以會跟大部分程式碼雷同，純粹是基於將自己學習過的東西進行分享，也歡迎剛接觸 AI 的同學參考。
 
+---
+
+## Jupyter Notebook 檔案命名規則
+
+- ex_*.ipynb：已確認完結果之範例程式
+- ck_*.ipynb：確認功能結果之驗證程式
+- tmp_*.ipynb：暫時保留之程式，可能會保留或捨棄
+- dev_*.ipynb：開發中程式
+
+---
+
 ## Todo
 
 ### Classification
