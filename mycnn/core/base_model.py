@@ -29,6 +29,29 @@ class KerasModel(object):
     - 呼叫 `setup_training()` 方法來定義訓練參數
     - 呼叫 `show_history()` 方法來繪製訓練過程
     - 允許存取 tf.keras.Model 原來方法
+
+    覆寫 method 的方式，來建構神經網路模型
+    1. 覆蓋 build() 方法來搭建神經網路架構
+    2. 使用 __init__() 方法來自行定義所需參數
+    3. 呼叫 self.setup_model(inputs, outputs, **kwargs)
+        傳入輸入張量 及輸出層 list
+
+    e.g.
+    ```
+    class MyCNN(KerasModel):
+        def __init__(self,
+                     input_shape=(20,),
+                     classes_num=1,
+                     **kwargs):
+            self.input_shape = input_shape
+            self.classes_num = classes_num
+            
+        def build(self, **kwargs):
+            x_in = layers.Input(shape=self.input_shape)
+            x = layers.Dense(self.classes_num)(x_in)
+            output = layers.Activation("sigmoid")(x)
+            self.setup_model(x_in, x_out, **kwargs)
+    ```
     """
 
     def __init__(self, prebuilt=True, **kwargs) -> None:
@@ -37,11 +60,7 @@ class KerasModel(object):
         self.logdir = kwargs.get('logdir', "log")
         self.built = False
         self.training = False
-        if kwargs.get('by_json', ""):
-            self.load_from_json(kwargs['by_json'])
-        elif kwargs.get('by_h5df', ""):
-            self.load_model(kwargs['by_h5df'])
-        elif prebuilt:
+        if prebuilt:
             self.build(**kwargs)
         else:
             print("[Warning] Please remember to "
@@ -49,13 +68,16 @@ class KerasModel(object):
     
     def build(self) -> None:
         """
+        建立神經網路的計算圖
+
         覆寫 method 的方式，來建構神經網路模型
         1. 覆蓋 build() 方法來搭建神經網路架構
         2. 使用 __init__() 方法來自行定義所需參數
         3. 呼叫 self.setup_model(inputs, outputs)
-           傳入輸入張量 及輸出層 list
+            傳入輸入張量 及輸出層 list
 
         e.g.
+        ```
         class MyCNN(KerasModel):
             def __init__(self,
                         input_shape=(20,),
@@ -63,12 +85,13 @@ class KerasModel(object):
                         **kwargs):
                 self.input_shape = input_shape
                 self.classes_num = classes_num
-            
-            def build(self):
+                
+            def build(self, **kwargs):
                 x_in = layers.Input(shape=self.input_shape)
                 x = layers.Dense(self.classes_num)(x_in)
                 output = layers.Activation("sigmoid")(x)
-                self.setup_model(x_in, x_out)
+                self.setup_model(x_in, x_out, **kwargs)
+        ```
         """
         raise NotImplementedError('[Error] Unimplemented `build()`: '
                                   'Please overridden `build()` '

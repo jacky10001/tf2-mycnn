@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from . import core
 from . import losses
 from . import data
 from . import utils
@@ -26,5 +27,5 @@ from .fcn import FCN16_KERAS
 from .fcn import FCN8_KERAS
 from .unet import UNet
 
-__version__ = "v0.22.01.24"
+__version__ = "v0.22.02.10"
 __maintainer__ = "Jacky"

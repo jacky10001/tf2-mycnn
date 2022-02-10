@@ -85,6 +85,7 @@ class UNet(KerasModel):
 
     單純用 padded convolutions 其實實作上更簡單，特徵圖大小計算更方便
     """
+    
     def __init__(self,
                  input_shape=(572, 572, 1),
                  classes_num=2,
@@ -93,7 +94,7 @@ class UNet(KerasModel):
         self.classes_num = classes_num
         super().__init__(**kwargs)
       
-    def build(self):
+    def build(self, **kwargs):
         x_in = layers.Input(shape=self.input_shape, name="image")
 
         # Common parameter for layer
@@ -210,4 +211,4 @@ class UNet(KerasModel):
         x = layers.Reshape((-1, self.classes_num))(conv1x1)
         x_out = layers.Softmax(name="prediction")(x)
         
-        self.setup_model(x_in, x_out, name="UNet")
+        self.setup_model(x_in, x_out, name="UNet", **kwargs)

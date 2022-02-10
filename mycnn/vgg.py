@@ -48,6 +48,7 @@ class ConvBN(models.Model):
 
 class VGG11(KerasModel):
     """ VGG11 (Type-A) """
+    
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=1000,
@@ -56,7 +57,7 @@ class VGG11(KerasModel):
         self.classes_num = classes_num
         super().__init__(**kwargs)
       
-    def build(self):
+    def build(self, **kwargs):
         x_in = layers.Input(shape=self.input_shape, name="image")
 
         # block 1
@@ -106,11 +107,12 @@ class VGG11(KerasModel):
 
         x_out = layers.Dense(self.classes_num, activation='softmax', name="predictions")(x)
         
-        self.setup_model(x_in, x_out, name="VGG11")
+        self.setup_model(x_in, x_out, name="VGG11", **kwargs)
 
 
 class VGG13(KerasModel):
     """ VGG11 (Type-B) """
+
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=1000,
@@ -119,7 +121,7 @@ class VGG13(KerasModel):
         self.classes_num = classes_num
         super().__init__(**kwargs)
       
-    def build(self):
+    def build(self, **kwargs):
         x_in = layers.Input(shape=self.input_shape, name="image")
 
         # block 1
@@ -171,11 +173,12 @@ class VGG13(KerasModel):
 
         x_out = layers.Dense(self.classes_num, activation='softmax', name="predictions")(x)
         
-        self.setup_model(x_in, x_out, name="VGG13")
+        self.setup_model(x_in, x_out, name="VGG13", **kwargs)
 
 
 class VGG16(KerasModel):
     """ VGG16 (Type-D) """
+
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=1000,
@@ -184,7 +187,7 @@ class VGG16(KerasModel):
         self.classes_num = classes_num
         super().__init__(**kwargs)
       
-    def build(self):
+    def build(self, **kwargs):
         x_in = layers.Input(shape=self.input_shape, name="image")
 
         # block 1
@@ -239,11 +242,12 @@ class VGG16(KerasModel):
 
         x_out = layers.Dense(self.classes_num, activation='softmax', name="predictions")(x)
         
-        self.setup_model(x_in, x_out, name="VGG16")
+        self.setup_model(x_in, x_out, name="VGG16", **kwargs)
 
 
 class VGG19(KerasModel):
     """ VGG19 (Type-E) """
+
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=1000,
@@ -252,7 +256,7 @@ class VGG19(KerasModel):
         self.classes_num = classes_num
         super().__init__(**kwargs)
       
-    def build(self):
+    def build(self, **kwargs):
         x_in = layers.Input(shape=self.input_shape, name="image")
 
         # block 1
@@ -310,4 +314,4 @@ class VGG19(KerasModel):
 
         x_out = layers.Dense(self.classes_num, activation='softmax', name="predictions")(x)
         
-        self.setup_model(x_in, x_out, name="VGG19")
+        self.setup_model(x_in, x_out, name="VGG19", **kwargs)

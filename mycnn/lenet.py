@@ -6,6 +6,8 @@ from .core import KerasModel
 
 
 class LeNet5(KerasModel):
+    """ LeNet5 (超參數依照論文設置) """
+
     def __init__(self,
                  input_shape=(32, 32, 1),
                  classes_num=10,
@@ -14,7 +16,7 @@ class LeNet5(KerasModel):
         self.classes_num = classes_num
         super().__init__(**kwargs)
     
-    def build(self):
+    def build(self, **kwargs):
         x_in = layers.Input(shape=self.input_shape)
 
         x = layers.Conv2D(
@@ -40,4 +42,4 @@ class LeNet5(KerasModel):
         x = layers.Dense(84, activation='tanh')(x)
         x_out = layers.Dense(self.classes_num, activation='softmax')(x)
         
-        self.setup_model(x_in, x_out, name="LeNet5")
+        self.setup_model(x_in, x_out, name="LeNet5", **kwargs)

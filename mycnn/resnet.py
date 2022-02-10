@@ -49,6 +49,7 @@ class ResBlock(models.Model):
 
 class ResNet18(KerasModel):
     """ ResNet18 """
+    
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=1000,
@@ -57,7 +58,7 @@ class ResNet18(KerasModel):
         self.classes_num = classes_num
         super().__init__(**kwargs)
       
-    def build(self):
+    def build(self, **kwargs):
         x_in = layers.Input(shape=self.input_shape, name="image")
 
         # input stem
@@ -96,11 +97,12 @@ class ResNet18(KerasModel):
         x = layers.GlobalAveragePooling2D(name='avg_pool')(x)
         x_out = layers.Dense(self.classes_num, activation='softmax', name="predictions")(x)
         
-        self.setup_model(x_in, x_out, name="ResNet18")
+        self.setup_model(x_in, x_out, name="ResNet18", **kwargs)
 
 
 class ResNet50(KerasModel):
     """ ResNet50 """
+
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=1000,
@@ -109,7 +111,7 @@ class ResNet50(KerasModel):
         self.classes_num = classes_num
         super().__init__(**kwargs)
       
-    def build(self):
+    def build(self, **kwargs):
         x_in = layers.Input(shape=self.input_shape, name="image")
 
         # input stem
@@ -156,11 +158,12 @@ class ResNet50(KerasModel):
         x = layers.GlobalAveragePooling2D(name='avg_pool')(x)
         x_out = layers.Dense(self.classes_num, activation='softmax', name="predictions")(x)
         
-        self.setup_model(x_in, x_out, name="ResNet50")
+        self.setup_model(x_in, x_out, name="ResNet50", **kwargs)
 
 
 class ResNet101(KerasModel):
     """ ResNet101 """
+
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=1000,
@@ -169,7 +172,7 @@ class ResNet101(KerasModel):
         self.classes_num = classes_num
         super().__init__(**kwargs)
       
-    def build(self):
+    def build(self, **kwargs):
         x_in = layers.Input(shape=self.input_shape, name="image")
 
         # input stem
@@ -233,4 +236,4 @@ class ResNet101(KerasModel):
         x = layers.GlobalAveragePooling2D(name='avg_pool')(x)
         x_out = layers.Dense(self.classes_num, activation='softmax', name="predictions")(x)
         
-        self.setup_model(x_in, x_out, name="ResNet101")
+        self.setup_model(x_in, x_out, name="ResNet101", **kwargs)
