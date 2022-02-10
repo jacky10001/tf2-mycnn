@@ -14,7 +14,7 @@ class LeNet5(KerasModel):
         self.classes_num = classes_num
         super().__init__(**kwargs)
     
-    def build(self):
+    def build(self, **kwargs):
         x_in = layers.Input(shape=self.input_shape)
 
         x = layers.Conv2D(
@@ -40,4 +40,4 @@ class LeNet5(KerasModel):
         x = layers.Dense(84, activation='tanh')(x)
         x_out = layers.Dense(self.classes_num, activation='softmax')(x)
         
-        self.setup_model(x_in, x_out, name="LeNet5")
+        self.setup_model(x_in, x_out, name="LeNet5", **kwargs)

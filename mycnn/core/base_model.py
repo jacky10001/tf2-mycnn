@@ -37,11 +37,7 @@ class KerasModel(object):
         self.logdir = kwargs.get('logdir', "log")
         self.built = False
         self.training = False
-        if kwargs.get('by_json', ""):
-            self.load_from_json(kwargs['by_json'])
-        elif kwargs.get('by_h5df', ""):
-            self.load_model(kwargs['by_h5df'])
-        elif prebuilt:
+        if prebuilt:
             self.build(**kwargs)
         else:
             print("[Warning] Please remember to "
