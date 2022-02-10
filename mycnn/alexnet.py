@@ -35,7 +35,9 @@ class LRN(layers.Layer):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-class AlexNet(KerasModel):  
+class AlexNet(KerasModel):
+    """ AlexNet+BN (超參數依照論文設置) """
+
     def __init__(self,
                  input_shape=(227, 227, 3),
                  classes_num=10,
@@ -44,7 +46,7 @@ class AlexNet(KerasModel):
         self.classes_num = classes_num
         super().__init__(**kwargs)
       
-    def build(self):
+    def build(self, **kwargs):
         x_in = layers.Input(shape=self.input_shape, name="image")
 
         x = layers.Conv2D(
@@ -124,9 +126,6 @@ class AlexNet(KerasModel):
         x = layers.ReLU()(x)
         x = layers.Dropout(0.5)(x)
 
-        x_out = layers.Dense(
-            self.classes_num,
-            activation='softmax'
-        )(x)
+        x_out = layers.Dense(self.classes_num, activation='softmax')(x)
         
-        self.setup_model(x_in, x_out, name="AlexNet")
+        self.setup_model(x_in, x_out, name="AlexNet", **kwargs)

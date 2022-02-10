@@ -348,8 +348,7 @@ class InceptionE(models.Model):
 
 
 class InceptionV3(KerasModel):
-    """
-    Inception V3
+    """ Inception V3
     參考 Keras 及 PyTorch 的 Inception V3 API
 
     論文提到使用了三種 Inception Module，每種又實現不同 Inception Block，論文稱其為 Network in Network
@@ -358,6 +357,7 @@ class InceptionV3(KerasModel):
     論文有提到輔助分類器，這邊暫時不使用，因為訓練初期並不會有太大影響
     需要訓練到後期要更進一步提升準確度時，再考慮是否需要加入輔助分類器
     """
+    
     def __init__(self,
                  input_shape=(299, 299, 3),
                  classes_num=1000,
@@ -366,7 +366,7 @@ class InceptionV3(KerasModel):
         self.classes_num = classes_num
         super().__init__(**kwargs)
       
-    def build(self):
+    def build(self, **kwargs):
         use_bias = False
         scale = False
 
@@ -425,4 +425,4 @@ class InceptionV3(KerasModel):
         x = layers.Dense(self.classes_num, activation="linear", name="linear")(x)
         x_out = layers.Dense(self.classes_num, activation="softmax", name="softmax")(x)
         
-        self.setup_model(x_in, x_out, name="InceptionV3")
+        self.setup_model(x_in, x_out, name="InceptionV3", **kwargs)

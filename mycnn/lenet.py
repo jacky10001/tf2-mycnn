@@ -6,6 +6,8 @@ from .core import KerasModel
 
 
 class LeNet5(KerasModel):
+    """ LeNet5 (超參數依照論文設置) """
+
     def __init__(self,
                  input_shape=(32, 32, 1),
                  classes_num=10,

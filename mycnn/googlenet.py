@@ -69,13 +69,13 @@ class InceptionV1(models.Model):
 
 
 class GoogLeNet(KerasModel):
-    """
-    GoogLeNet (InceptionV1)
+    """ GoogLeNet (InceptionV1)
 
     Note:
     論文有提到輔助分類器，這邊暫時不使用，因為訓練初期並不會有太大影響
     需要訓練到後期要更進一步提升準確度時，再考慮是否需要加入輔助分類器
     """
+    
     def __init__(self,
                  input_shape=(224, 224, 3),
                  classes_num=1000,
@@ -84,7 +84,7 @@ class GoogLeNet(KerasModel):
         self.classes_num = classes_num
         super().__init__(**kwargs)
       
-    def build(self):
+    def build(self, **kwargs):
         x_in = layers.Input(shape=self.input_shape, name="image")
 
         # 224x224x3 -> 112x112x64
@@ -129,4 +129,4 @@ class GoogLeNet(KerasModel):
         x = layers.Dense(self.classes_num, activation='linear', name="linear")(x)
         x_out = layers.Dense(self.classes_num, activation='softmax', name="softmax")(x)
         
-        self.setup_model(x_in, x_out, name="GoogLeNet")
+        self.setup_model(x_in, x_out, name="GoogLeNet", **kwargs)

@@ -140,7 +140,7 @@ class FCN32(KerasModel):
         self.use_bn = use_bn
         super().__init__(**kwargs)
       
-    def build(self):
+    def build(self, **kwargs):
         # Common parameter for layer
         block_name = "fcn32"
         padding = "same"
@@ -156,7 +156,7 @@ class FCN32(KerasModel):
         x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
-        self.setup_model(x_in, x_out, name="FCN32")
+        self.setup_model(x_in, x_out, name="FCN32", **kwargs)
 
 
 class FCN16(KerasModel):
@@ -173,7 +173,7 @@ class FCN16(KerasModel):
         self.use_bn = use_bn
         super().__init__(**kwargs)
       
-    def build(self):
+    def build(self, **kwargs):
         # Common parameter for layer
         block_name = "fcn16"
         padding = "same"
@@ -195,7 +195,7 @@ class FCN16(KerasModel):
         x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
-        self.setup_model(x_in, x_out, name="FCN16")
+        self.setup_model(x_in, x_out, name="FCN16", **kwargs)
 
 
 class FCN8(KerasModel):
@@ -212,7 +212,7 @@ class FCN8(KerasModel):
         self.use_bn = use_bn
         super().__init__(**kwargs)
       
-    def build(self):
+    def build(self, **kwargs):
         # Common parameter for layer
         block_name = "fcn8"
         padding = "same"
@@ -238,7 +238,7 @@ class FCN8(KerasModel):
         x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
-        self.setup_model(x_in, x_out, name="FCN8")
+        self.setup_model(x_in, x_out, name="FCN8", **kwargs)
 
 
 class FCN32_KERAS(KerasModel):
@@ -255,7 +255,7 @@ class FCN32_KERAS(KerasModel):
         self.top_filters = top_filters
         super().__init__(**kwargs)
       
-    def build(self):
+    def build(self, **kwargs):
         # Common parameter for layer
         kernel_initializer = "he_normal"
         padding = "same"
@@ -282,7 +282,7 @@ class FCN32_KERAS(KerasModel):
         x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
-        self.setup_model(x_in, x_out, name="FCN32")
+        self.setup_model(x_in, x_out, name="FCN32", **kwargs)
 
 
 class FCN16_KERAS(KerasModel):
@@ -299,7 +299,7 @@ class FCN16_KERAS(KerasModel):
         self.top_filters = top_filters
         super().__init__(**kwargs)
       
-    def build(self):
+    def build(self, **kwargs):
         # Common parameter for layer
         kernel_initializer = "he_normal"
         padding = "same"
@@ -334,7 +334,7 @@ class FCN16_KERAS(KerasModel):
         x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
-        self.setup_model(x_in, x_out, name="FCN16")
+        self.setup_model(x_in, x_out, name="FCN16", **kwargs)
 
 
 class FCN8_KERAS(KerasModel):
@@ -351,7 +351,7 @@ class FCN8_KERAS(KerasModel):
         self.top_filters = top_filters
         super().__init__(**kwargs)
       
-    def build(self):
+    def build(self, **kwargs):
         # Common parameter for layer
         kernel_initializer = "he_normal"
         padding = "same"
@@ -390,4 +390,4 @@ class FCN8_KERAS(KerasModel):
         x = layers.Reshape((-1, self.classes_num))(x)
         x_out = layers.Softmax(name="predictions")(x)
         
-        self.setup_model(x_in, x_out, name="FCN8")
+        self.setup_model(x_in, x_out, name="FCN8", **kwargs)
