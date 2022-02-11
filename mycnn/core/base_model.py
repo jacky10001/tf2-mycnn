@@ -6,17 +6,20 @@
 import os
 import os.path as osp
 from contextlib import redirect_stdout
+from typing import Optional, List, Any, Union
 
 import numpy as np
-from tensorflow.keras import callbacks, optimizers, models
+from tensorflow.keras import callbacks, optimizers, models, layers
 
 from ._file import save_json
 from ._history import (find_all_ckpts, find_best_ckpt, find_last_ckpt,
                        load_history, show_history)
 from ._wrapper import check_filepath, check_state, implement_model
+from ._featuremap import show_featuremap
 
 KERAS_CALLBACKS = list(filter(lambda x: isinstance(x, type), callbacks.__dict__.values()))
 KERAS_OPTIMIZERS = list(filter(lambda x: isinstance(x, type), optimizers.__dict__.values()))
+FML_LIST = [layers.Conv2D, layers.MaxPool2D, layers.AveragePooling2D]  # Feature maps layers
 
 
 class KerasModel(object):
@@ -246,7 +249,6 @@ class KerasModel(object):
             from tensorflow.keras.utils import plot_model
             plot_model(self.__M, to_file=osp.join(self.logdir, "model.png"), show_shapes=True)
         self.training = True
-        return self
 
     @check_state("built", "training")
     def train(self, tra_x, tra_y, val_x, val_y, last_checkpoint=""):
@@ -346,7 +348,6 @@ class KerasModel(object):
     def load_weights(self, filepath: str, by_name: bool=False):
         print(f"[Info] Load weights from {filepath}")
         self.__M.load_weights(filepath, by_name=by_name)
-        return self
         
     @check_state("built")
     def get_layers_weights(self, verbose=True) -> dict:
@@ -400,7 +401,6 @@ class KerasModel(object):
         best_ckpt = find_best_ckpt(ckpts)
         filepath = osp.join(self.ckpts_dir, best_ckpt)
         self.__M.load_weights(filepath)
-        return self
 
     def load_checkpoint(self, epoch: int=-1):
         if not osp.exists(self.ckpts_dir):
@@ -410,7 +410,20 @@ class KerasModel(object):
         filepath = osp.join(self.ckpts_dir, ckpt)
         print(f"Choose {epoch}: {filepath}")
         self.__M.load_weights(filepath)
-        return self
+    
+    def show_featuremap(self, im_tensor: np.ndarray, ret_arr: bool = True) -> Union[None, list]:
+        layer_names = []
+        layer_outputs = []
+        for layer in self.__M.layers:
+            if layer.__class__ in FML_LIST:
+                name = layer.name
+                op = layer.output
+                if len(op.shape) == 4:
+                    print(op.shape, name)
+                    layer_names.append(name)
+                    layer_outputs.append(op)
+        
+        return show_featuremap(self.__M.inputs, layer_outputs, layer_names, im_tensor, self.logdir, ret_arr)
 
     @property
     def model(self) -> models.Model:
