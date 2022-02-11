@@ -19,20 +19,14 @@ from ._featuremap import show_featuremap
 
 KERAS_CALLBACKS = list(filter(lambda x: isinstance(x, type), callbacks.__dict__.values()))
 KERAS_OPTIMIZERS = list(filter(lambda x: isinstance(x, type), optimizers.__dict__.values()))
-FML_LIST = [layers.Conv2D, layers.MaxPool2D, layers.AveragePooling2D]  # Feature maps layers
-
-
-class KerasModel(object):
+# Feature maps layers
+FML_LIST = [
+    layers.Conv2D, layers.Convolution2D, layers.Conv2DTranspose,
+    layers.BatchNormalization, layers.MaxPool2D, layers.AveragePooling2D,
+    layers.Activation, layers.ReLU, layers.LeakyReLU, layers.ELU
+]
+DOC_EXAMPLE = \
     """
-    KerasModel
-    基於 tf.keras.Model 的實例物件，實現功能擴展
-    
-    Feature:
-    - 覆寫 `build()` 方法來配置 Keras 模型
-    - 呼叫 `setup_training()` 方法來定義訓練參數
-    - 呼叫 `show_history()` 方法來繪製訓練過程
-    - 允許存取 tf.keras.Model 原來方法
-
     覆寫 method 的方式，來建構神經網路模型
     1. 覆蓋 build() 方法來搭建神經網路架構
     2. 使用 __init__() 方法來自行定義所需參數
@@ -57,6 +51,20 @@ class KerasModel(object):
     ```
     """
 
+class KerasModel(object):
+    """
+    KerasModel
+    基於 tf.keras.Model 的實例物件，實現功能擴展
+    
+    Feature:
+    - 覆寫 `build()` 方法來配置 Keras 模型
+    - 呼叫 `setup_training()` 方法來定義訓練參數
+    - 呼叫 `show_history()` 方法來繪製訓練過程
+    - 允許存取 tf.keras.Model 原來方法
+
+    {}
+    """.format(DOC_EXAMPLE)
+
     def __init__(self, prebuilt=True, **kwargs) -> None:
         self.__M = models.Model
         self.__cbks_list = []
@@ -79,23 +87,8 @@ class KerasModel(object):
         3. 呼叫 self.setup_model(inputs, outputs)
             傳入輸入張量 及輸出層 list
 
-        e.g.
-        ```
-        class MyCNN(KerasModel):
-            def __init__(self,
-                        input_shape=(20,),
-                        classes_num=1,
-                        **kwargs):
-                self.input_shape = input_shape
-                self.classes_num = classes_num
-                
-            def build(self, **kwargs):
-                x_in = layers.Input(shape=self.input_shape)
-                x = layers.Dense(self.classes_num)(x_in)
-                output = layers.Activation("sigmoid")(x)
-                self.setup_model(x_in, x_out, **kwargs)
-        ```
-        """
+        {}
+        """.format(DOC_EXAMPLE)
         raise NotImplementedError('[Error] Unimplemented `build()`: '
                                   'Please overridden `build()` '
                                   'method and provide arguments.')
