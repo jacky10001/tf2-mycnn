@@ -6,7 +6,17 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.models import Model
 
 
-def show_featuremap(model_inputs, layer_outputs, layer_names, img_tensor, logdir, ret_arr):
+def channels_gcd(ch_list):
+    return np.gcd.reduce(ch_list)
+
+
+def show_featuremap(model_inputs,
+                    layer_outputs,
+                    layer_names,
+                    img_tensor,
+                    logdir,
+                    verbose=True, 
+                    images_per_row=2):
     fm_list = []
 
     activation_model = Model(inputs=model_inputs, outputs=layer_outputs)
@@ -14,8 +24,6 @@ def show_featuremap(model_inputs, layer_outputs, layer_names, img_tensor, logdir
     print(len(activations))
     first_layer_activation = activations[0]
     print(first_layer_activation.shape)
-
-    images_per_row = 2
 
     cnt = 1
     for layer_name, layer_activation in zip(layer_names, activations):
@@ -35,14 +43,16 @@ def show_featuremap(model_inputs, layer_outputs, layer_names, img_tensor, logdir
                 channel_image = np.clip(channel_image, 0, 255).astype('uint8')
                 display_grid[col * size : (col + 1) * size,
                             row * size : (row + 1) * size] = channel_image
+        
+        if verbose:
+            scale = 1. / size
+            plt.figure(figsize=(scale * display_grid.shape[1],
+                    scale * display_grid.shape[0]))
+            plt.title(layer_name)
+            plt.grid(False)
+            plt.imshow(display_grid, aspect='auto', cmap='viridis')
+            plt.show()
 
-        scale = 1. / size
-        plt.figure(figsize=(scale * display_grid.shape[1],
-        scale * display_grid.shape[0]))
-        plt.title(layer_name)
-        plt.grid(False)
-        plt.imshow(display_grid, aspect='auto', cmap='viridis')
-        plt.show()
         savefig = np.abs(display_grid)/np.abs(np.max(display_grid)) * 255
         
         save_dir = os.path.join(logdir, "feature_maps")
@@ -57,4 +67,4 @@ def show_featuremap(model_inputs, layer_outputs, layer_names, img_tensor, logdir
         fm_list.append(image)
         cnt += 1
     
-    return fm_list if ret_arr else None
+    return fm_list

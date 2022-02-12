@@ -15,7 +15,7 @@ from ._file import save_json
 from ._history import (find_all_ckpts, find_best_ckpt, find_last_ckpt,
                        load_history, show_history)
 from ._wrapper import check_filepath, check_state, implement_model
-from ._featuremap import show_featuremap
+from ._featuremap import show_featuremap, channels_gcd
 
 KERAS_CALLBACKS = list(filter(lambda x: isinstance(x, type), callbacks.__dict__.values()))
 KERAS_OPTIMIZERS = list(filter(lambda x: isinstance(x, type), optimizers.__dict__.values()))
@@ -404,19 +404,30 @@ class KerasModel(object):
         print(f"Choose {epoch}: {filepath}")
         self.__M.load_weights(filepath)
     
-    def show_featuremap(self, im_tensor: np.ndarray, ret_arr: bool = True) -> Union[None, list]:
+    def show_featuremap(self, im_tensor: np.ndarray,
+                        verbose: bool=True,
+                        ret_arr: bool = True) -> Union[None, list]:
         layer_names = []
         layer_outputs = []
+        ch_list = []
         for layer in self.__M.layers:
             if layer.__class__ in FML_LIST:
                 name = layer.name
                 op = layer.output
+                ch = op.shape[-1]
                 if len(op.shape) == 4:
                     print(op.shape, name)
                     layer_names.append(name)
                     layer_outputs.append(op)
+                    ch_list.append(ch)
         
-        return show_featuremap(self.__M.inputs, layer_outputs, layer_names, im_tensor, self.logdir, ret_arr)
+        images_per_row = channels_gcd(ch_list)
+
+        fm_list = show_featuremap(self.__M.inputs, layer_outputs, layer_names,
+                                  im_tensor, self.logdir, verbose,
+                                  images_per_row=images_per_row)
+                               
+        return fm_list if ret_arr else None
 
     @property
     def model(self) -> models.Model:
