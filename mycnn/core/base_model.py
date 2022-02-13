@@ -6,14 +6,16 @@
 import os
 import os.path as osp
 from contextlib import redirect_stdout
+from typing import Optional, List, Any, Union
 
 import numpy as np
-from tensorflow.keras import callbacks, optimizers, models
+from tensorflow.keras import callbacks, optimizers, models, layers
 
 from ._file import save_json
 from ._history import (find_all_ckpts, find_best_ckpt, find_last_ckpt,
                        load_history, show_history)
 from ._wrapper import check_filepath, check_state, implement_model
+from ._featuremap import show_featuremap
 
 KERAS_CALLBACKS = list(filter(lambda x: isinstance(x, type), callbacks.__dict__.values()))
 KERAS_OPTIMIZERS = list(filter(lambda x: isinstance(x, type), optimizers.__dict__.values()))
@@ -74,24 +76,7 @@ class KerasModel(object):
         1. 覆蓋 build() 方法來搭建神經網路架構
         2. 使用 __init__() 方法來自行定義所需參數
         3. 呼叫 self.setup_model(inputs, outputs)
-            傳入輸入張量 及輸出層 list
-
-        e.g.
-        ```
-        class MyCNN(KerasModel):
-            def __init__(self,
-                        input_shape=(20,),
-                        classes_num=1,
-                        **kwargs):
-                self.input_shape = input_shape
-                self.classes_num = classes_num
-                
-            def build(self, **kwargs):
-                x_in = layers.Input(shape=self.input_shape)
-                x = layers.Dense(self.classes_num)(x_in)
-                output = layers.Activation("sigmoid")(x)
-                self.setup_model(x_in, x_out, **kwargs)
-        ```
+           傳入輸入張量 及輸出層 list
         """
         raise NotImplementedError('[Error] Unimplemented `build()`: '
                                   'Please overridden `build()` '
@@ -246,7 +231,6 @@ class KerasModel(object):
             from tensorflow.keras.utils import plot_model
             plot_model(self.__M, to_file=osp.join(self.logdir, "model.png"), show_shapes=True)
         self.training = True
-        return self
 
     @check_state("built", "training")
     def train(self, tra_x, tra_y, val_x, val_y, last_checkpoint=""):
@@ -346,7 +330,6 @@ class KerasModel(object):
     def load_weights(self, filepath: str, by_name: bool=False):
         print(f"[Info] Load weights from {filepath}")
         self.__M.load_weights(filepath, by_name=by_name)
-        return self
         
     @check_state("built")
     def get_layers_weights(self, verbose=True) -> dict:
@@ -400,7 +383,6 @@ class KerasModel(object):
         best_ckpt = find_best_ckpt(ckpts)
         filepath = osp.join(self.ckpts_dir, best_ckpt)
         self.__M.load_weights(filepath)
-        return self
 
     def load_checkpoint(self, epoch: int=-1):
         if not osp.exists(self.ckpts_dir):
@@ -410,7 +392,29 @@ class KerasModel(object):
         filepath = osp.join(self.ckpts_dir, ckpt)
         print(f"Choose {epoch}: {filepath}")
         self.__M.load_weights(filepath)
-        return self
+    
+    def show_featuremap(self, im_tensor: np.ndarray,
+                        verbose: bool=True,
+                        ret_arr: bool = True) -> Union[None, list]:
+        layer_names = []
+        layer_outputs = []
+        layer_channels = []
+        for layer in self.__M.layers:
+            name = layer.name
+            op = layer.output
+            shape = op.get_shape()
+            ch = shape[-1]
+            if len(shape) == 4:
+                print(f"{name:20} {shape}")
+                layer_names.append(name)
+                layer_outputs.append(op)
+                layer_channels.append(ch)
+        
+        fm_list = show_featuremap(self.__M.inputs, layer_outputs,
+                                  layer_channels, layer_names,
+                                  im_tensor, self.logdir, verbose)
+                               
+        return fm_list if ret_arr else None
 
     @property
     def model(self) -> models.Model:
