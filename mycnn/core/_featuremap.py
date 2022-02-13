@@ -6,17 +6,25 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.models import Model
 
 
-def channels_gcd(ch_list):
-    return np.gcd.reduce(ch_list)
+def cal_images_per_row(layer_channel):
+    images_per_row = 1
+    if layer_channel > 4:
+        if layer_channel%2 == 0:
+            images_per_row = np.gcd(layer_channel, 16)
+        elif layer_channel%3 == 0:
+            images_per_row = np.gcd(layer_channel, 18)
+        elif layer_channel%5 == 0:
+            images_per_row = np.gcd(layer_channel, 20)
+    return images_per_row
 
 
 def show_featuremap(model_inputs,
                     layer_outputs,
+                    layer_channels,
                     layer_names,
                     img_tensor,
                     logdir,
-                    verbose=True, 
-                    images_per_row=2):
+                    verbose=True):
     fm_list = []
 
     activation_model = Model(inputs=model_inputs, outputs=layer_outputs)
@@ -26,7 +34,8 @@ def show_featuremap(model_inputs,
     print(first_layer_activation.shape)
 
     cnt = 1
-    for layer_name, layer_activation in zip(layer_names, activations):
+    for layer_name, layer_channel, layer_activation in zip(layer_names, layer_channels, activations):
+        images_per_row = cal_images_per_row(layer_channel)
         n_features = layer_activation.shape[-1]
         size = layer_activation.shape[1]
 

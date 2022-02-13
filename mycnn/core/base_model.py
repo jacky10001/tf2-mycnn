@@ -15,18 +15,23 @@ from ._file import save_json
 from ._history import (find_all_ckpts, find_best_ckpt, find_last_ckpt,
                        load_history, show_history)
 from ._wrapper import check_filepath, check_state, implement_model
-from ._featuremap import show_featuremap, channels_gcd
+from ._featuremap import show_featuremap
 
 KERAS_CALLBACKS = list(filter(lambda x: isinstance(x, type), callbacks.__dict__.values()))
 KERAS_OPTIMIZERS = list(filter(lambda x: isinstance(x, type), optimizers.__dict__.values()))
-# Feature maps layers
-FML_LIST = [
-    layers.Conv2D, layers.Convolution2D, layers.Conv2DTranspose,
-    layers.BatchNormalization, layers.MaxPool2D, layers.AveragePooling2D,
-    layers.Activation, layers.ReLU, layers.LeakyReLU, layers.ELU
-]
-DOC_EXAMPLE = \
+
+
+class KerasModel(object):
     """
+    KerasModel
+    基於 tf.keras.Model 的實例物件，實現功能擴展
+    
+    Feature:
+    - 覆寫 `build()` 方法來配置 Keras 模型
+    - 呼叫 `setup_training()` 方法來定義訓練參數
+    - 呼叫 `show_history()` 方法來繪製訓練過程
+    - 允許存取 tf.keras.Model 原來方法
+
     覆寫 method 的方式，來建構神經網路模型
     1. 覆蓋 build() 方法來搭建神經網路架構
     2. 使用 __init__() 方法來自行定義所需參數
@@ -51,20 +56,6 @@ DOC_EXAMPLE = \
     ```
     """
 
-class KerasModel(object):
-    """
-    KerasModel
-    基於 tf.keras.Model 的實例物件，實現功能擴展
-    
-    Feature:
-    - 覆寫 `build()` 方法來配置 Keras 模型
-    - 呼叫 `setup_training()` 方法來定義訓練參數
-    - 呼叫 `show_history()` 方法來繪製訓練過程
-    - 允許存取 tf.keras.Model 原來方法
-
-    {}
-    """.format(DOC_EXAMPLE)
-
     def __init__(self, prebuilt=True, **kwargs) -> None:
         self.__M = models.Model
         self.__cbks_list = []
@@ -85,10 +76,8 @@ class KerasModel(object):
         1. 覆蓋 build() 方法來搭建神經網路架構
         2. 使用 __init__() 方法來自行定義所需參數
         3. 呼叫 self.setup_model(inputs, outputs)
-            傳入輸入張量 及輸出層 list
-
-        {}
-        """.format(DOC_EXAMPLE)
+           傳入輸入張量 及輸出層 list
+        """
         raise NotImplementedError('[Error] Unimplemented `build()`: '
                                   'Please overridden `build()` '
                                   'method and provide arguments.')
@@ -409,23 +398,21 @@ class KerasModel(object):
                         ret_arr: bool = True) -> Union[None, list]:
         layer_names = []
         layer_outputs = []
-        ch_list = []
+        layer_channels = []
         for layer in self.__M.layers:
-            if layer.__class__ in FML_LIST:
-                name = layer.name
-                op = layer.output
-                ch = op.shape[-1]
-                if len(op.shape) == 4:
-                    print(op.shape, name)
-                    layer_names.append(name)
-                    layer_outputs.append(op)
-                    ch_list.append(ch)
+            name = layer.name
+            op = layer.output
+            shape = op.get_shape()
+            ch = shape[-1]
+            if len(shape) == 4:
+                print(f"{name:20} {shape}")
+                layer_names.append(name)
+                layer_outputs.append(op)
+                layer_channels.append(ch)
         
-        images_per_row = channels_gcd(ch_list)
-
-        fm_list = show_featuremap(self.__M.inputs, layer_outputs, layer_names,
-                                  im_tensor, self.logdir, verbose,
-                                  images_per_row=images_per_row)
+        fm_list = show_featuremap(self.__M.inputs, layer_outputs,
+                                  layer_channels, layer_names,
+                                  im_tensor, self.logdir, verbose)
                                
         return fm_list if ret_arr else None
 
