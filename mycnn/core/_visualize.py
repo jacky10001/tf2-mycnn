@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.models import Model
 
 
-def cal_images_per_row(layer_channel):
+def _cal_images_per_row(layer_channel):
+    """計算特徵圖要輸出的列數"""
     images_per_row = 1
     if layer_channel > 4:
         if layer_channel%2 == 0:
@@ -25,17 +26,29 @@ def show_featuremap(model_inputs,
                     img_tensor,
                     logdir,
                     verbose=True):
+    """
+    顯示輸入影像之特徵圖
+
+    parameters
+    ----------
+    model_inputs   : 模型輸入節點
+    layer_outputs  : 特徵圖輸出節點
+    layer_channels : 各層特徵圖數量
+    layer_names    : 各層之名稱
+    img_tensor     : 輸入影像資料，4D Tensor
+    logdir         : 保存位置
+    verbose        : 直接顯示
+    """
+    assert img_tensor.shape[0] == 0
+
     fm_list = []
 
     activation_model = Model(inputs=model_inputs, outputs=layer_outputs)
     activations = activation_model.predict(img_tensor)
-    print(len(activations))
-    first_layer_activation = activations[0]
-    print(first_layer_activation.shape)
 
     cnt = 1
     for layer_name, layer_channel, layer_activation in zip(layer_names, layer_channels, activations):
-        images_per_row = cal_images_per_row(layer_channel)
+        images_per_row = _cal_images_per_row(layer_channel)
         n_features = layer_activation.shape[-1]
         size = layer_activation.shape[1]
 
