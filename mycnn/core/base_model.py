@@ -15,7 +15,7 @@ from ._file import save_json
 from ._history import (find_all_ckpts, find_best_ckpt, find_last_ckpt,
                        load_history, show_history)
 from ._wrapper import check_filepath, check_state, implement_model
-from ._featuremap import show_featuremap
+from ._visualize import show_featuremap
 
 KERAS_CALLBACKS = list(filter(lambda x: isinstance(x, type), callbacks.__dict__.values()))
 KERAS_OPTIMIZERS = list(filter(lambda x: isinstance(x, type), optimizers.__dict__.values()))
