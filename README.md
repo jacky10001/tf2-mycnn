@@ -3,7 +3,7 @@
 **還在研究 TensorFlow 2 中，不知啥時可以完成...希望盡量以相同概念來完成各種CNN:smile:**  
 **所有範例的資料都支援自動下載並自動處理成範例程式所用之檔案格式及檔案結構，會儲存在 `datasets` 資料夾中。**  
 **目前範例確認皆可支援最新的 TensorFlow 2，其結果可以直接看 Jupyter Notebook 的範例程式**  
-**文檔放在 [GitHub Wiki](https://github.com/jacky10001/tf2-mycnn/wiki)，記錄一些必要知識，會慢慢增加**  
+~~**文檔放在 GitHub Wiki，但被我弄壞了QQ，要重寫**~~  
 **最終目標希望能完成類似一個小框架來呼叫分類、分割、物件偵測模型**  
 
 ---
